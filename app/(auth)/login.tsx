@@ -1,18 +1,21 @@
+import { theme } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { Image } from 'react-native';
+
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  SafeAreaView,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/hooks/useAuth';
-import { theme } from '@/constants/theme';
+require('@/assets/images/icon.png');
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -21,7 +24,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const handleLogin = async () => {
     if (!email || !password) {
       setError('Por favor completa todos los campos');
@@ -59,61 +61,82 @@ export default function LoginScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Bienvenido</Text>
-          <Text style={styles.subtitle}>Inicia sesión en tu cuenta</Text>
+          <View style={styles.card}>
+            <View style={styles.Space} />
+            <Image
+              source={require('@/assets/images/logo.png')}
+              style={styles.logo}
+            />
 
-          {error && <Text style={styles.error}>{error}</Text>}
+            <Text style={styles.title}>Bee-Smart</Text>
+            <Text style={styles.subtitle}>Suite de manejo</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Correo electrónico"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={email}
-            onChangeText={setEmail}
-            editable={!loading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+            {error && <Text style={styles.error}>{error}</Text>}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={password}
-            onChangeText={setPassword}
-            editable={!loading}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+            <Text style={styles.index}>Email o Usuario</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="ingresa tu email o usuario"
+              placeholderTextColor={theme.colors.mediumGray}
+              value={email}
+              onChangeText={setEmail}
+              editable={!loading}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.white} />
-            ) : (
-              <Text style={styles.buttonText}>Iniciar Sesión</Text>
-            )}
-          </TouchableOpacity>
+            <Text style={styles.index}>Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ingresa tu contraseña"
+              placeholderTextColor={theme.colors.mediumGray}
+              value={password}
+              onChangeText={setPassword}
+              editable={!loading}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-          <View style={styles.divider} />
-
-          <TouchableOpacity
-            style={[styles.guestButton, loading && styles.buttonDisabled]}
-            onPress={handleGuestLogin}
-            disabled={loading}
-          >
-            <Text style={styles.guestButtonText}>Continuar como Invitado</Text>
-          </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>¿No tienes cuenta? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-              <Text style={styles.footerLink}>Regístrate aquí</Text>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={theme.colors.white} />
+              ) : (
+                <Text style={styles.buttonText}>Ingresar</Text>
+              )}
             </TouchableOpacity>
+
+            <View style={styles.Space} />
+
+            <TouchableOpacity
+              style={[styles.guestButton, loading && styles.buttonDisabled]}
+              onPress={handleGuestLogin}
+              disabled={loading}
+            >
+              <Text style={styles.guestButtonText}>
+                Continuar como Invitado
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>¿Nuevo en Bee-Smart? </Text>
+
+              <TouchableOpacity
+                style={styles.buttonRegister}
+                onPress={() => router.push('/(auth)/register')}
+              >
+                <Text style={styles.registerButtonText}>Crear Cuenta</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          <Text style={styles.term}>
+            @2026 Bee-Smart. Todos los derechos reservados.
+          </Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -128,20 +151,54 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
+  card: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius * 1.2,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    shadowColor: theme.ligth.shadowColor,
+    shadowOffset: theme.ligth.shadowOffset,
+    shadowOpacity: theme.ligth.shadowOpacity,
+    shadowRadius: theme.ligth.shadowRadius,
+    elevation: theme.ligth.elevation,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: theme.spacing.md,
+  },
   content: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
+  Space: {
+    marginBottom: theme.spacing.md,
+  },
   title: {
     fontSize: theme.typography.heading.fontSize,
     fontWeight: theme.typography.heading.fontWeight,
     color: theme.colors.black,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
     textAlign: 'center',
   },
   subtitle: {
+    fontSize: theme.typography.caption.fontSize,
+    color: theme.colors.darkGray,
+    textAlign: 'center',
+    marginTop: -10,
+    marginBottom: theme.spacing.xl,
+  },
+  index: {
     fontSize: theme.typography.body.fontSize,
+    color: theme.colors.darkGray,
+    textAlign: 'left',
+    marginBottom: theme.spacing.sm,
+  },
+  term: {
+    fontSize: theme.typography.term.fontSize,
     color: theme.colors.darkGray,
     textAlign: 'center',
     marginBottom: theme.spacing.xl,
@@ -158,11 +215,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white,
   },
   button: {
-    backgroundColor: theme.colors.black,
+    backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius,
     paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     alignItems: 'center',
     marginTop: theme.spacing.md,
+  },
+  buttonRegister: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: '600',
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -175,18 +247,18 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: theme.colors.mediumGray,
-    marginVertical: theme.spacing.lg,
+    marginVertical: theme.spacing.md,
   },
   guestButton: {
-    backgroundColor: theme.colors.lightGray,
+    backgroundColor: theme.colors.secondary,
     borderRadius: theme.borderRadius,
     borderWidth: 1,
-    borderColor: theme.colors.mediumGray,
+    borderColor: theme.colors.white,
     paddingVertical: theme.spacing.md,
     alignItems: 'center',
   },
   guestButtonText: {
-    color: theme.colors.black,
+    color: theme.colors.white,
     fontSize: theme.typography.body.fontSize,
     fontWeight: '600',
   },
@@ -197,9 +269,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    gap: 5,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.sm,
   },
   footerText: {
     color: theme.colors.darkGray,
