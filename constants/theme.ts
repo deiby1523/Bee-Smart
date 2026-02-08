@@ -16,6 +16,7 @@ export const theme = {
     md: 16,
     lg: 24,
     xl: 32,
+    xll: 80,
   },
   typography: {
     heading: {
