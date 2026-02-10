@@ -1,7 +1,7 @@
 import { theme } from '@/constants/theme';
 import { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import { Tabs } from 'expo-router';
-import { FileText, Home } from 'lucide-react-native';
+import { FileText, Hexagon, Home } from 'lucide-react-native';
 import React from 'react';
 
 export default function AppLayout() {
@@ -23,6 +23,13 @@ export default function AppLayout() {
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <Home color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="apiarios"
+        options={{
+          title: 'Apiarios',
+          tabBarIcon: ({ color }) => <Hexagon color={color} size={24} />,
         }}
       />
       <Tabs.Screen
