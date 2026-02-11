@@ -11,7 +11,7 @@ export default function Page2Screen() {
         <View style={styles.card}>
           <Text style={styles.title}>Página 2</Text>
           <Text style={styles.description}>
-            Esta es la segunda página de contenido. Es un espacio listo para expandirse con tus propias características.
+            Esta es la segunda página -- de contenido. Es un espacio listo para expandirse con tus propias características.
           </Text>
         </View>
 
