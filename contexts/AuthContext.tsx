@@ -1,8 +1,16 @@
-import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, AuthContextType } from '../types/auth';
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 const STORAGE_KEY = 'auth_user';
 
@@ -42,16 +50,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(newUser);
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const newUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      isGuest: false,
-    };
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-  }, []);
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      const newUser: User = {
+        id: Date.now().toString(),
+        name,
+        email,
+        isGuest: false,
+      };
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+      setUser(newUser);
+    },
+    []
+  );
 
   const loginAsGuest = useCallback(async () => {
     const guestUser: User = {
