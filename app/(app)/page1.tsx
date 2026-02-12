@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -84,6 +85,12 @@ export default function ColmenasScreen() {
       onPress={() => router.push(`/apiarios/${item.id_apiario}` as any)}
       activeOpacity={0.7}
     >
+      {item.foto_url && (
+        <Image
+          source={{ uri: item.foto_url }}
+          style={styles.cardImage}
+        />
+      )}
       <View style={styles.cardHeader}>
         <View style={styles.cardContent}>
           <Text style={styles.colmenaCodigo}>{item.codigo_colmena}</Text>
@@ -186,15 +193,21 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.lightGray,
     borderRadius: 12,
-    padding: theme.spacing.md,
+    overflow: 'hidden',
     marginBottom: theme.spacing.md,
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.secondary,
+  },
+  cardImage: {
+    width: '100%',
+    height: 140,
+    backgroundColor: theme.colors.mediumGray,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    padding: theme.spacing.md,
   },
   cardContent: {
     flex: 1,
@@ -233,7 +246,8 @@ const styles = StyleSheet.create({
   observaciones: {
     fontSize: 12,
     color: theme.colors.darkGray,
-    marginTop: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     lineHeight: 16,
   },
   centerContent: {
