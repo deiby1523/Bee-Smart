@@ -1,3 +1,4 @@
+import PhotoPicker from '@/components/PhotoPicker';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
@@ -24,7 +25,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import PhotoPicker from '@/components/PhotoPicker';
 
 export default function ApiarioDetailScreen() {
   const router = useRouter();

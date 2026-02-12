@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Beaker, TrendingUp } from 'lucide-react-native';
 import { theme } from '@/constants/theme';
+import { Beaker, TrendingUp } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface ApiarioStatsCardProps {
   totalColmenas: number;

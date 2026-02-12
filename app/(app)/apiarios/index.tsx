@@ -1,21 +1,21 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Edit2, Plus, Trash2 } from 'lucide-react-native';
-import { Apiario } from '@/types/apiario';
+import ApiarioStatsCard from '@/components/ApiarioStatsCard';
+import SearchFilter from '@/components/SearchFilter';
+import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
 import { initDatabase } from '@/src/services/database';
-import { theme } from '@/constants/theme';
-import SearchFilter from '@/components/SearchFilter';
-import ApiarioStatsCard from '@/components/ApiarioStatsCard';
+import { Apiario } from '@/types/apiario';
+import { useRouter } from 'expo-router';
+import { Edit2, Plus, Trash2 } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    Alert,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 interface ApiarioWithStats extends Apiario {
   totalColmenas: number;

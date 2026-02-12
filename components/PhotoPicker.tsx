@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import { theme } from '@/constants/theme';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Upload, X } from 'lucide-react-native';
-import { theme } from '@/constants/theme';
+import React, { useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 interface PhotoPickerProps {
   photoUri?: string;

@@ -7,13 +7,13 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { AlertCircle, ChevronRight } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface ColmenaWithApiario extends Colmena {

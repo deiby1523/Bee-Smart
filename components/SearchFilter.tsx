@@ -1,14 +1,14 @@
+import { theme } from '@/constants/theme';
+import { Search, X } from 'lucide-react-native';
 import React from 'react';
 import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  ScrollView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Search, X } from 'lucide-react-native';
-import { theme } from '@/constants/theme';
 
 interface SearchFilterProps {
   searchValue: string;
