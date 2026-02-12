@@ -15,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Alert,
     FlatList,
+    Image,
     Modal,
     ScrollView,
     StyleSheet,
@@ -234,6 +235,14 @@ export default function ApiarioDetailScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Foto del Apiario */}
+        {apiario.foto_url && (
+          <Image
+            source={{ uri: apiario.foto_url }}
+            style={styles.apiarioImage}
+          />
+        )}
+
         {/* Info del Apiario */}
         <View style={styles.apiarioInfoCard}>
           {apiario.descripcion && (
@@ -429,6 +438,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  apiarioImage: {
+    width: '100%',
+    height: 220,
+    backgroundColor: theme.colors.lightGray,
   },
   apiarioInfoCard: {
     backgroundColor: theme.colors.lightGray,

@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import PhotoPicker from '@/components/PhotoPicker';
 
 export default function EditApiarioScreen() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function EditApiarioScreen() {
   const [municipio, setMunicipio] = useState('');
   const [latitud, setLatitud] = useState('');
   const [longitud, setLongitud] = useState('');
+  const [fotoUrl, setFotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function EditApiarioScreen() {
         setMunicipio(apiario.municipio || '');
         setLatitud(apiario.latitud ? apiario.latitud.toString() : '');
         setLongitud(apiario.longitud ? apiario.longitud.toString() : '');
+        setFotoUrl(apiario.foto_url || '');
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo cargar el apiario');
@@ -62,6 +65,7 @@ export default function EditApiarioScreen() {
         municipio: municipio.trim() || undefined,
         latitud: latitud ? parseFloat(latitud) : undefined,
         longitud: longitud ? parseFloat(longitud) : undefined,
+        foto_url: fotoUrl || undefined,
         fecha_creacion: isNew ? new Date().toISOString() : undefined,
       };
 
@@ -99,6 +103,96 @@ export default function EditApiarioScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <PhotoPicker
+          photoUri={fotoUrl}
+          onPhotoSelected={setFotoUrl}
+          onPhotoRemoved={() => setFotoUrl('')}
+          label="Foto del Apiario"
+        />
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Nombre *</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre del apiario"
+            value={nombre}
+            onChangeText={setNombre}
+            placeholderTextColor={theme.colors.mediumGray}
+          />
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Descripción</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Descripción del apiario"
+            value={descripcion}
+            onChangeText={setDescripcion}
+            multiline
+            numberOfLines={4}
+            placeholderTextColor={theme.colors.mediumGray}
+          />
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Municipio</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Municipio"
+            value={municipio}
+            onChangeText={setMunicipio}
+            placeholderTextColor={theme.colors.mediumGray}
+          />
+        </View>
+
+        <View style={styles.rowContainer}>
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Latitud</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej: 37.7749"
+              value={latitud}
+              onChangeText={setLatitud}
+              keyboardType="decimal-pad"
+              placeholderTextColor={theme.colors.mediumGray}
+            />
+          </View>
+
+          <View style={[styles.formGroup, styles.halfWidth]}>
+            <Text style={styles.label}>Longitud</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej: -122.4194"
+              value={longitud}
+              onChangeText={setLongitud}
+              keyboardType="decimal-pad"
+              placeholderTextColor={theme.colors.mediumGray}
+            />
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.cancelButton]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.saveButton]}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            <Text style={styles.saveButtonText}>
+              {loading ? 'Guardando...' : isNew ? 'Crear' : 'Guardar'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Nombre *</Text>
           <TextInput

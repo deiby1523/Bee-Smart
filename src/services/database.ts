@@ -14,7 +14,8 @@ export async function initDatabase() {
         longitud REAL,
         municipio TEXT,
         fecha_creacion TEXT NOT NULL,
-        id_usuario INTEGER
+        id_usuario INTEGER,
+        foto_url TEXT
       );
     `);
 
@@ -27,9 +28,23 @@ export async function initDatabase() {
         fecha_instalacion TEXT NOT NULL,
         observaciones TEXT,
         id_apiario INTEGER NOT NULL,
+        foto_url TEXT,
         FOREIGN KEY (id_apiario) REFERENCES apiarios(id_apiario) ON DELETE CASCADE
       );
     `);
+
+    // Adicionar columna foto_url si no existe (para migraciones)
+    try {
+      await db.execAsync(`ALTER TABLE apiarios ADD COLUMN foto_url TEXT;`);
+    } catch (e) {
+      // La columna ya existe, ignorar el error
+    }
+
+    try {
+      await db.execAsync(`ALTER TABLE colmenas ADD COLUMN foto_url TEXT;`);
+    } catch (e) {
+      // La columna ya existe, ignorar el error
+    }
 
     console.log('Database initialized successfully');
   } catch (error) {

@@ -13,8 +13,8 @@ export const apiarioService = {
   async createApiario(apiario: Omit<Apiario, 'id_apiario'>): Promise<number> {
     try {
       const result = await db.runAsync(
-        `INSERT INTO apiarios (nombre, descripcion, latitud, longitud, municipio, fecha_creacion, id_usuario)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO apiarios (nombre, descripcion, latitud, longitud, municipio, fecha_creacion, id_usuario, foto_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           apiario.nombre,
           apiario.descripcion || null,
@@ -23,6 +23,7 @@ export const apiarioService = {
           apiario.municipio || null,
           apiario.fecha_creacion,
           apiario.id_usuario || null,
+          apiario.foto_url || null,
         ]
       );
       return result.lastInsertRowId;
@@ -188,6 +189,10 @@ export const apiarioService = {
       if (apiario.municipio !== undefined) {
         updates.push('municipio = ?');
         values.push(apiario.municipio);
+      }
+      if (apiario.foto_url !== undefined) {
+        updates.push('foto_url = ?');
+        values.push(apiario.foto_url);
       }
 
       if (updates.length === 0) return;

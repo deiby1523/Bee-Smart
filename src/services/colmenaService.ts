@@ -8,14 +8,15 @@ export const colmenaService = {
   async createColmena(colmena: Omit<Colmena, 'id_colmena'>): Promise<number> {
     try {
       const result = await db.runAsync(
-        `INSERT INTO colmenas (codigo_colmena, estado_general, fecha_instalacion, observaciones, id_apiario)
-         VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO colmenas (codigo_colmena, estado_general, fecha_instalacion, observaciones, id_apiario, foto_url)
+         VALUES (?, ?, ?, ?, ?, ?)`,
         [
           colmena.codigo_colmena,
           colmena.estado_general || null,
           colmena.fecha_instalacion,
           colmena.observaciones || null,
           colmena.id_apiario,
+          colmena.foto_url || null,
         ]
       );
       return result.lastInsertRowId;
@@ -74,6 +75,10 @@ export const colmenaService = {
       if (colmena.observaciones !== undefined) {
         updates.push('observaciones = ?');
         values.push(colmena.observaciones);
+      }
+      if (colmena.foto_url !== undefined) {
+        updates.push('foto_url = ?');
+        values.push(colmena.foto_url);
       }
 
       if (updates.length === 0) return;
