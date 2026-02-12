@@ -1,16 +1,18 @@
+import PhotoPicker from '@/components/PhotoPicker';
+import DatePickerField from '@/components/DatePickerField';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function EditApiarioScreen() {
@@ -23,6 +25,7 @@ export default function EditApiarioScreen() {
   const [municipio, setMunicipio] = useState('');
   const [latitud, setLatitud] = useState('');
   const [longitud, setLongitud] = useState('');
+  const [fotoUrl, setFotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function EditApiarioScreen() {
         setMunicipio(apiario.municipio || '');
         setLatitud(apiario.latitud ? apiario.latitud.toString() : '');
         setLongitud(apiario.longitud ? apiario.longitud.toString() : '');
+        setFotoUrl(apiario.foto_url || '');
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo cargar el apiario');
@@ -62,6 +66,7 @@ export default function EditApiarioScreen() {
         municipio: municipio.trim() || undefined,
         latitud: latitud ? parseFloat(latitud) : undefined,
         longitud: longitud ? parseFloat(longitud) : undefined,
+        foto_url: fotoUrl || undefined,
         fecha_creacion: isNew ? new Date().toISOString() : undefined,
       };
 
@@ -99,6 +104,13 @@ export default function EditApiarioScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <PhotoPicker
+          photoUri={fotoUrl}
+          onPhotoSelected={setFotoUrl}
+          onPhotoRemoved={() => setFotoUrl('')}
+          label="Foto del Apiario"
+        />
+
         <View style={styles.formGroup}>
           <Text style={styles.label}>Nombre *</Text>
           <TextInput

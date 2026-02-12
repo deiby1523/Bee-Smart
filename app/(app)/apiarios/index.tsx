@@ -1,22 +1,33 @@
+import ApiarioStatsCard from '@/components/ApiarioStatsCard';
+import SearchFilter from '@/components/SearchFilter';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
+import { colmenaService } from '@/src/services/colmenaService';
 import { initDatabase } from '@/src/services/database';
 import { Apiario } from '@/types/apiario';
 import { useRouter } from 'expo-router';
 import { Edit2, Plus, Trash2 } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     FlatList,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
+
+interface ApiarioWithStats extends Apiario {
+  totalColmenas: number;
+  colmenasActivas: number;
+}
 
 export default function ApiariosList() {
   const router = useRouter();
-  const [apiarios, setApiarios] = useState<Apiario[]>([]);
+  const [apiarios, setApiarios] = useState<ApiarioWithStats[]>([]);
+  const [municipios, setMunicipios] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeMunicipio, setActiveMunicipio] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -24,7 +35,7 @@ export default function ApiariosList() {
     const setupAndLoad = async () => {
       try {
         await initDatabase();
-        await loadApiarios();
+        await loadData();
       } catch (error) {
         Alert.alert('Error', 'No se pudo inicializar la base de datos');
         console.error(error);
@@ -33,12 +44,34 @@ export default function ApiariosList() {
     setupAndLoad();
   }, []);
 
-  const loadApiarios = async () => {
+  const loadData = async () => {
     try {
-      const data = await apiarioService.getAllApiarios();
-      setApiarios(data);
+      // Cargar apiarios con estadísticas
+      const allApiarios = await apiarioService.getAllApiarios();
+      
+      const apiariosWithStats: ApiarioWithStats[] = [];
+      for (const apiario of allApiarios) {
+        const colmenas = await colmenaService.getColmenasByApiario(
+          apiario.id_apiario
+        );
+        const colmenasActivas = colmenas.filter(
+          (c) => c.estado_general === 'Activo' || c.estado_general === 'Fuerte'
+        ).length;
+
+        apiariosWithStats.push({
+          ...apiario,
+          totalColmenas: colmenas.length,
+          colmenasActivas,
+        });
+      }
+
+      setApiarios(apiariosWithStats);
+
+      // Cargar municipios únicos
+      const muns = await apiarioService.getUniqueMunicipios();
+      setMunicipios(muns);
     } catch (error) {
-      Alert.alert('Error', 'No se pudieron cargar los apiarios');
+      Alert.alert('Error', 'No se pudieron cargar los datos');
       console.error(error);
     } finally {
       setLoading(false);
@@ -48,7 +81,7 @@ export default function ApiariosList() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    loadApiarios();
+    loadData();
   };
 
   const handleDelete = (id: number, nombre: string) => {
@@ -62,7 +95,7 @@ export default function ApiariosList() {
           onPress: async () => {
             try {
               await apiarioService.deleteApiario(id);
-              await loadApiarios();
+              await loadData();
               Alert.alert('Éxito', 'Apiario eliminado correctamente');
             } catch (error) {
               Alert.alert('Error', 'No se pudo eliminar el apiario');
@@ -75,7 +108,35 @@ export default function ApiariosList() {
     );
   };
 
-  const renderApiarioItem = ({ item }: { item: Apiario }) => (
+  // Filtrar y buscar apiarios
+  const filteredApiarios = useMemo(() => {
+    let result = [...apiarios];
+
+    // Filtrar por municipio
+    if (activeMunicipio) {
+      result = result.filter((a) => a.municipio === activeMunicipio);
+    }
+
+    // Buscar por nombre, descripción o municipio
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (a) =>
+          a.nombre.toLowerCase().includes(query) ||
+          (a.descripcion?.toLowerCase().includes(query) ?? false) ||
+          (a.municipio?.toLowerCase().includes(query) ?? false)
+      );
+    }
+
+    return result;
+  }, [apiarios, activeMunicipio, searchQuery]);
+
+  const municipioFilters = municipios.map((m) => ({
+    id: m,
+    label: m,
+  }));
+
+  const renderApiarioItem = ({ item }: { item: ApiarioWithStats }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => router.push(`/apiarios/${item.id_apiario}` as any)}
@@ -87,6 +148,9 @@ export default function ApiariosList() {
           <Text style={styles.cardDate}>
             {new Date(item.fecha_creacion).toLocaleDateString()}
           </Text>
+          {item.municipio && (
+            <Text style={styles.cardMunicipio}>{item.municipio}</Text>
+          )}
         </View>
         <View style={styles.actionButtons}>
           <TouchableOpacity
@@ -103,14 +167,21 @@ export default function ApiariosList() {
           </TouchableOpacity>
         </View>
       </View>
+
       {item.descripcion && (
         <Text style={styles.cardDescription} numberOfLines={2}>
           {item.descripcion}
         </Text>
       )}
-      {item.municipio && (
-        <Text style={styles.cardMunicipio}>{item.municipio}</Text>
-      )}
+
+      {/* Estadísticas */}
+      <View style={styles.statsContainer}>
+        <ApiarioStatsCard
+          totalColmenas={item.totalColmenas}
+          colmenasActivas={item.colmenasActivas}
+          showDetails={true}
+        />
+      </View>
     </TouchableOpacity>
   );
 
@@ -126,26 +197,53 @@ export default function ApiariosList() {
         </TouchableOpacity>
       </View>
 
+      {!loading && apiarios.length > 0 && (
+        <SearchFilter
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClearSearch={() => setSearchQuery('')}
+          activeFilter={activeMunicipio}
+          onFilterChange={setActiveMunicipio}
+          filters={municipioFilters}
+          placeholder="Buscar apiario..."
+        />
+      )}
+
       {loading && apiarios.length === 0 ? (
         <View style={styles.centerContent}>
           <Text style={styles.emptyText}>Cargando...</Text>
         </View>
-      ) : apiarios.length === 0 ? (
+      ) : filteredApiarios.length === 0 ? (
         <View style={styles.centerContent}>
-          <Text style={styles.emptyText}>No hay apiarios aún</Text>
+          <Text style={styles.emptyText}>
+            {apiarios.length === 0
+              ? 'No hay apiarios aún'
+              : 'No se encontraron resultados'}
+          </Text>
           <Text style={styles.emptySubtext}>
-            Toca el botón + para crear uno
+            {apiarios.length === 0
+              ? 'Toca el botón + para crear uno'
+              : 'Intenta con otra búsqueda o filtro'}
           </Text>
         </View>
       ) : (
         <FlatList
-          data={apiarios}
+          data={filteredApiarios}
           renderItem={renderApiarioItem}
           keyExtractor={(item) => item.id_apiario.toString()}
           contentContainerStyle={styles.listContent}
           refreshing={refreshing}
           onRefresh={handleRefresh}
           scrollEnabled={true}
+          ListHeaderComponent={
+            searchQuery || activeMunicipio || filteredApiarios.length !== apiarios.length
+              ? (
+                  <Text style={styles.resultCount}>
+                    {filteredApiarios.length} de {apiarios.length} apiarios
+                  </Text>
+                )
+              : null
+          }
         />
       )}
     </View>
@@ -184,6 +282,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
   },
+  resultCount: {
+    fontSize: 12,
+    color: theme.colors.darkGray,
+    fontWeight: '500',
+    marginBottom: theme.spacing.md,
+  },
   card: {
     backgroundColor: theme.colors.lightGray,
     borderRadius: 12,
@@ -196,6 +300,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginBottom: theme.spacing.sm,
   },
   cardContent: {
     flex: 1,
@@ -210,6 +315,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.darkGray,
   },
+  cardMunicipio: {
+    fontSize: 12,
+    color: theme.colors.primary,
+    fontWeight: '500',
+    marginTop: theme.spacing.xs,
+  },
   actionButtons: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
@@ -223,13 +334,12 @@ const styles = StyleSheet.create({
   cardDescription: {
     fontSize: 14,
     color: theme.colors.darkGray,
-    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
-  cardMunicipio: {
-    fontSize: 13,
-    color: theme.colors.primary,
-    marginTop: theme.spacing.xs,
-    fontWeight: '500',
+  statsContainer: {
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.mediumGray,
   },
   centerContent: {
     flex: 1,

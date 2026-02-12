@@ -1,3 +1,6 @@
+import PhotoPicker from '@/components/PhotoPicker';
+import DatePickerField from '@/components/DatePickerField';
+import StatePickerField from '@/components/StatePickerField';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
@@ -15,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Alert,
     FlatList,
+    Image,
     Modal,
     ScrollView,
     StyleSheet,
@@ -39,6 +43,7 @@ export default function ApiarioDetailScreen() {
   const [estadoGeneral, setEstadoGeneral] = useState('');
   const [fechaInstalacion, setFechaInstalacion] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [fotoColmena, setFotoColmena] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -66,6 +71,7 @@ export default function ApiarioDetailScreen() {
     setEstadoGeneral('');
     setFechaInstalacion('');
     setObservaciones('');
+    setFotoColmena('');
     setEditingColmenaId(null);
   };
 
@@ -87,6 +93,7 @@ export default function ApiarioDetailScreen() {
         estado_general: estadoGeneral.trim() || undefined,
         fecha_instalacion: fechaInstalacion,
         observaciones: observaciones.trim() || undefined,
+        foto_url: fotoColmena || undefined,
         id_apiario: idNum,
       };
 
@@ -112,6 +119,7 @@ export default function ApiarioDetailScreen() {
     setEstadoGeneral(colmena.estado_general || '');
     setFechaInstalacion(colmena.fecha_instalacion);
     setObservaciones(colmena.observaciones || '');
+    setFotoColmena(colmena.foto_url || '');
     setEditingColmenaId(colmena.id_colmena);
     setShowNewColmenaModal(true);
   };
@@ -142,6 +150,13 @@ export default function ApiarioDetailScreen() {
 
   const renderColmenaItem = ({ item }: { item: Colmena }) => (
     <View style={styles.colmenaCard}>
+      {item.foto_url && (
+        <Image
+          source={{ uri: item.foto_url }}
+          style={styles.colmenaImage}
+        />
+      )}
+
       <View style={styles.colmenaHeader}>
         <View style={styles.colmenaInfo}>
           <Text style={styles.colmenaCodigo}>{item.codigo_colmena}</Text>
@@ -234,6 +249,14 @@ export default function ApiarioDetailScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Foto del Apiario */}
+        {apiario.foto_url && (
+          <Image
+            source={{ uri: apiario.foto_url }}
+            style={styles.apiarioImage}
+          />
+        )}
+
         {/* Info del Apiario */}
         <View style={styles.apiarioInfoCard}>
           {apiario.descripcion && (
@@ -328,6 +351,13 @@ export default function ApiarioDetailScreen() {
               style={styles.modalForm}
               showsVerticalScrollIndicator={false}
             >
+              <PhotoPicker
+                photoUri={fotoColmena}
+                onPhotoSelected={setFotoColmena}
+                onPhotoRemoved={() => setFotoColmena('')}
+                label="Foto de la Colmena"
+              />
+
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Código *</Text>
                 <TextInput
@@ -341,25 +371,18 @@ export default function ApiarioDetailScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Estado General</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: Activo, Débil, Vuelo"
+                <StatePickerField
+                  label=""
                   value={estadoGeneral}
-                  onChangeText={setEstadoGeneral}
-                  placeholderTextColor={theme.colors.mediumGray}
+                  onStateChange={setEstadoGeneral}
                 />
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Fecha de Instalación *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="YYYY-MM-DD"
-                  value={fechaInstalacion}
-                  onChangeText={setFechaInstalacion}
-                  placeholderTextColor={theme.colors.mediumGray}
-                />
-              </View>
+              <DatePickerField
+                label="Fecha de Instalación *"
+                value={fechaInstalacion}
+                onDateChange={setFechaInstalacion}
+              />
 
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Observaciones</Text>
@@ -429,6 +452,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  apiarioImage: {
+    width: '100%',
+    height: 220,
+    backgroundColor: theme.colors.lightGray,
   },
   apiarioInfoCard: {
     backgroundColor: theme.colors.lightGray,
@@ -517,12 +545,18 @@ const styles = StyleSheet.create({
   colmenaCard: {
     backgroundColor: theme.colors.lightGray,
     borderRadius: 8,
-    padding: theme.spacing.md,
+    overflow: 'hidden',
+  },
+  colmenaImage: {
+    width: '100%',
+    height: 150,
+    backgroundColor: theme.colors.mediumGray,
   },
   colmenaHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    padding: theme.spacing.md,
   },
   colmenaInfo: {
     flex: 1,
@@ -552,7 +586,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 2,
-    marginTop: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    marginVertical: theme.spacing.sm,
     alignSelf: 'flex-start',
   },
   estadoText: {
@@ -563,7 +598,8 @@ const styles = StyleSheet.create({
   colmenaObservaciones: {
     fontSize: 12,
     color: theme.colors.darkGray,
-    marginTop: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     lineHeight: 16,
   },
   separator: {

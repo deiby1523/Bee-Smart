@@ -7,6 +7,7 @@ export interface Apiario {
   municipio?: string;
   fecha_creacion: string;
   id_usuario?: number;
+  foto_url?: string;
 }
 
 export interface Colmena {
@@ -16,6 +17,7 @@ export interface Colmena {
   fecha_instalacion: string;
   observaciones?: string;
   id_apiario: number;
+  foto_url?: string;
 }
 
 export interface ApiarioWithColmenas extends Apiario {
