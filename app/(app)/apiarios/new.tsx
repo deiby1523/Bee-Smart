@@ -1,4 +1,5 @@
 import PhotoPicker from '@/components/PhotoPicker';
+import DatePickerField from '@/components/DatePickerField';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { useLocalSearchParams, useRouter } from 'expo-router';

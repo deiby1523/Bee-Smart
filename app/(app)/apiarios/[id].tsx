@@ -1,4 +1,6 @@
 import PhotoPicker from '@/components/PhotoPicker';
+import DatePickerField from '@/components/DatePickerField';
+import StatePickerField from '@/components/StatePickerField';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
@@ -369,25 +371,18 @@ export default function ApiarioDetailScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Estado General</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: Activo, Débil, Vuelo"
+                <StatePickerField
+                  label=""
                   value={estadoGeneral}
-                  onChangeText={setEstadoGeneral}
-                  placeholderTextColor={theme.colors.mediumGray}
+                  onStateChange={setEstadoGeneral}
                 />
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Fecha de Instalación *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="YYYY-MM-DD"
-                  value={fechaInstalacion}
-                  onChangeText={setFechaInstalacion}
-                  placeholderTextColor={theme.colors.mediumGray}
-                />
-              </View>
+              <DatePickerField
+                label="Fecha de Instalación *"
+                value={fechaInstalacion}
+                onDateChange={setFechaInstalacion}
+              />
 
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Observaciones</Text>

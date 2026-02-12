@@ -5,7 +5,7 @@ import { initDatabase } from '@/src/services/database';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { AlertCircle, ChevronRight } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     FlatList,
@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import SearchFilter from '@/components/SearchFilter';
 
 interface ColmenaWithApiario extends Colmena {
   apiarioNombre?: string;
@@ -26,6 +27,8 @@ export default function ColmenasScreen() {
   const [apiarios, setApiarios] = useState<Apiario[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const setupAndLoad = async () => {
@@ -78,6 +81,42 @@ export default function ColmenasScreen() {
     setRefreshing(true);
     loadData();
   };
+
+  // Filtrar y buscar colmenas
+  const filteredColmenas = useMemo(() => {
+    let result = [...colmenas];
+
+    // Filtrar por estado
+    if (activeFilter) {
+      result = result.filter((c) => c.estado_general === activeFilter);
+    }
+
+    // Buscar por código, apiario u observaciones
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.codigo_colmena.toLowerCase().includes(query) ||
+          (c.apiarioNombre?.toLowerCase().includes(query) ?? false) ||
+          (c.observaciones?.toLowerCase().includes(query) ?? false)
+      );
+    }
+
+    return result;
+  }, [colmenas, activeFilter, searchQuery]);
+
+  // Obtener estados únicos de colmenas
+  const estadosUnicos = useMemo(() => {
+    const estados = new Set(
+      colmenas.filter((c) => c.estado_general).map((c) => c.estado_general!)
+    );
+    return Array.from(estados).sort();
+  }, [colmenas]);
+
+  const estadoFilters = estadosUnicos.map((e) => ({
+    id: e,
+    label: e,
+  }));
 
   const renderColmenaItem = ({ item }: { item: ColmenaWithApiario }) => (
     <TouchableOpacity
@@ -141,15 +180,47 @@ export default function ColmenasScreen() {
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={colmenas}
-          renderItem={renderColmenaItem}
-          keyExtractor={(item) => `${item.id_apiario}-${item.id_colmena}`}
-          contentContainerStyle={styles.listContent}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          scrollEnabled={true}
-        />
+        <>
+          {colmenas.length > 0 && (
+            <SearchFilter
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              onClearSearch={() => setSearchQuery('')}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              filters={estadoFilters}
+              placeholder="Buscar colmena..."
+            />
+          )}
+
+          {filteredColmenas.length === 0 ? (
+            <View style={styles.centerContent}>
+              <Text style={styles.emptyText}>No se encontraron colmenas</Text>
+              <Text style={styles.emptySubtext}>
+                Intenta con otro búsqueda o filtro
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredColmenas}
+              renderItem={renderColmenaItem}
+              keyExtractor={(item) => `${item.id_apiario}-${item.id_colmena}`}
+              contentContainerStyle={styles.listContent}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              scrollEnabled={true}
+              ListHeaderComponent={
+                searchQuery || activeFilter || filteredColmenas.length !== colmenas.length
+                  ? (
+                      <Text style={styles.resultCount}>
+                        {filteredColmenas.length} de {colmenas.length} colmenas
+                      </Text>
+                    )
+                  : null
+              }
+            />
+          )}
+        </>
       )}
     </View>
   );
@@ -189,6 +260,12 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
+  },
+  resultCount: {
+    fontSize: 12,
+    color: theme.colors.darkGray,
+    fontWeight: '500',
+    marginBottom: theme.spacing.md,
   },
   card: {
     backgroundColor: theme.colors.lightGray,
