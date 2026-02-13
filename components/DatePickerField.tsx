@@ -69,7 +69,6 @@ export default function DatePickerField({
     </View>
   );
 }
-}
 
 const styles = StyleSheet.create({
   container: {
