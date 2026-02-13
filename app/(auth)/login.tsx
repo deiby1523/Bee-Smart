@@ -7,8 +7,10 @@ import {
   getAuth,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Alert,
+  Animated,
   Image,
   ScrollView,
   StyleSheet,
@@ -21,6 +23,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 require('@/assets/images/icon.png');
 
 export default function LoginScreen() {
+  const showError = (message: string) => {
+    setErrorMessage(message);
+
+    errorAnim.setValue(0);
+    Animated.timing(errorAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const errorAnim = useRef(new Animated.Value(0)).current;
+
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
@@ -28,28 +43,43 @@ export default function LoginScreen() {
   const auth = getAuth(app);
 
   const handleCreateAccount = () => {
+    if (!email || !password) {
+      Alert.alert('Campos incompletos', 'Por favor llena todos los espacios');
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert(
+        'Contraseña inválida',
+        'La contraseña debe tener al menos 8 caracteres',
+      );
+      return;
+    }
+
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        console.log('Cuenta creada');
-        const user = userCredential.user;
-        console.log(user);
+        Alert.alert('Éxito', 'Cuenta creada correctamente');
+        console.log(userCredential.user);
       })
       .catch((error) => {
-        console.log(error);
+        Alert.alert('Error', error.message);
       });
   };
 
   const handleSignIn = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log('Sesión iniciada');
-        const user = userCredential.user;
-        console.log(user);
+    setErrorMessage('');
 
+    if (!email || !password) {
+      showError('Por favor completa todos los campos');
+      return;
+    }
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
         router.replace('/');
       })
-      .catch((error) => {
-        console.log(error.message);
+      .catch(() => {
+        showError('El usuario o la contraseña son incorrectos');
       });
   };
   const router = useRouter();
@@ -64,6 +94,26 @@ export default function LoginScreen() {
           />
           <Text style={styles.title}>Bee- Smart</Text>
           <Text style={styles.subtitle}>Suite de manejo</Text>
+          {errorMessage ? (
+            <Animated.Text
+              style={[
+                styles.errorText,
+                {
+                  opacity: errorAnim,
+                  transform: [
+                    {
+                      translateY: errorAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-6, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              {errorMessage}
+            </Animated.Text>
+          ) : null}
           <Text style={styles.index}>Email o Usuario</Text>
           <TextInput
             style={styles.input}
@@ -86,6 +136,7 @@ export default function LoginScreen() {
             onChangeText={(Text) => setPassword(Text)}
             secureTextEntry={true}
           />
+
           <TouchableOpacity style={styles.button} onPress={handleSignIn}>
             <Text style={styles.buttonText}>Iniciar Sesión</Text>
           </TouchableOpacity>
@@ -264,5 +315,13 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
     fontSize: theme.typography.body.fontSize,
     fontWeight: '600',
+  },
+  errorText: {
+    color: theme.colors.error,
+    fontSize: 10,
+    marginTop: 3,
+    marginBottom: 3,
+    textAlign: 'center',
+    marginLeft: 4,
   },
 });
