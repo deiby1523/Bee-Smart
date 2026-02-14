@@ -1,13 +1,13 @@
-import React, { useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { theme } from '@/constants/theme';
 import { Picker } from '@react-native-picker/picker';
 import { ChevronDown } from 'lucide-react-native';
-import { theme } from '@/constants/theme';
+import React, { useRef } from 'react';
+import {
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 interface StatePickerFieldProps {
   label: string;

@@ -4,7 +4,7 @@ import { colmenaService } from '@/src/services/colmenaService';
 import { initDatabase } from '@/src/services/database';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { AlertCircle, ChevronRight } from 'lucide-react-native';
+import { Hexagon, ChevronRight } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
@@ -174,7 +174,7 @@ export default function ColmenasScreen() {
         </View>
       ) : colmenas.length === 0 ? (
         <View style={styles.centerContent}>
-          <AlertCircle size={48} color={theme.colors.mediumGray} />
+          <Hexagon size={48} color={theme.colors.mediumGray} />
           <Text style={styles.emptyText}>No hay colmenas aún</Text>
           <Text style={styles.emptySubtext}>
             Crea un apiario y agrega colmenas desde la pestaña "Apiarios"
@@ -213,9 +213,12 @@ export default function ColmenasScreen() {
               ListHeaderComponent={
                 searchQuery || activeFilter || filteredColmenas.length !== colmenas.length
                   ? (
-                      <Text style={styles.resultCount}>
-                        {filteredColmenas.length} de {colmenas.length} colmenas
-                      </Text>
+                      <View style={styles.resultCountContainer}>
+                        <Hexagon size={16} color={theme.colors.primary} />
+                        <Text style={styles.resultCount}>
+                          {filteredColmenas.length} de {colmenas.length} colmenas
+                        </Text>
+                      </View>
                     )
                   : null
               }
@@ -267,6 +270,13 @@ const styles = StyleSheet.create({
     color: theme.colors.darkGray,
     fontWeight: '500',
     marginBottom: theme.spacing.md,
+  },
+  resultCountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   card: {
     backgroundColor: theme.colors.lightGray,
