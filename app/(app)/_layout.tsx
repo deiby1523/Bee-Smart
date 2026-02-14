@@ -4,16 +4,9 @@ import { Tabs } from 'expo-router';
 import { FileText, Hexagon, Home, Grid } from 'lucide-react-native';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import ColmenasIcon from '@/components/ColmenasIcon';
 
-// Componente personalizado para el icono de colmenas
-const ColmenasIcon = ({ color, size = 24 }: { color: string; size?: number }) => {
-  return (
-    <View style={[styles.colmenasContainer, { width: size, height: size }]}>
-      <View style={[styles.hexagon, { borderColor: color }]} />
-      <View style={[styles.hexagon, { borderColor: color }]} />
-    </View>
-  );
-};
+
 
 const styles = StyleSheet.create({
   colmenasContainer: {

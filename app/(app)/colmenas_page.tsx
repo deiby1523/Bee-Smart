@@ -1,10 +1,11 @@
+import SearchFilter from '@/components/SearchFilter';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
 import { initDatabase } from '@/src/services/database';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Hexagon, ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Hexagon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
@@ -16,7 +17,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SearchFilter from '@/components/SearchFilter';
 
 interface ColmenaWithApiario extends Colmena {
   apiarioNombre?: string;
