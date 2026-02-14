@@ -45,7 +45,7 @@ export default function AppLayout() {
   return (
     <Tabs screenOptions={tabBarOptions}>
       <Tabs.Screen
-        name="index"
+        name="home_page"
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <Home color={color} size={24} />,
@@ -59,21 +59,21 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="page1"
+        name="colmenas_page"
         options={{
           title: 'Colmenas',
           tabBarIcon: ({ color }) => <ColmenasIcon color={color} size={24} />,
         }}
       />
       <Tabs.Screen
-        name="page2"
+        name="inspecciones_page"
         options={{
           title: 'Inspecciones',
           tabBarIcon: ({ color }) => <FileText color={color} size={24} />,
         }}
       />
       <Tabs.Screen
-        name="page3"
+        name="produccion_page"
         options={{
           title: 'Produccion',
           tabBarIcon: ({ color }) => <FileText color={color} size={24} />,
