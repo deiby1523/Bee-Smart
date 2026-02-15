@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     height: 50,
     resizeMode: 'contain',
     alignSelf: 'center',
-    marginBottom: 0,
+    marginBottom: 1,
   },
   content: {
     flex: 1,

@@ -3,13 +3,13 @@ import { firebaseConfig } from '@/firebase-config';
 import { useRouter } from 'expo-router';
 import { initializeApp } from 'firebase/app';
 import {
-  createUserWithEmailAndPassword,
   getAuth,
-  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithEmailAndPassword
 } from 'firebase/auth';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
   Animated,
   Image,
   ScrollView,
@@ -17,12 +17,42 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowse from 'expo-web-browser';
+
+WebBrowse.maybeCompleteAuthSession();
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 require('@/assets/images/icon.png');
 
 export default function LoginScreen() {
+  //Ingreso Gooogle
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId:
+      '855966967630-g9chns1njmb3uvshe0kra9hvd1689msn.apps.googleusercontent.com',
+    clientId:
+      '855966967630-iau7vd20tuddbqqi9ul910iuvia9bd2o.apps.googleusercontent.com',
+  });
+
+  React.useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+
+      signInWithCredential(auth, credential)
+        .then(() => {
+          router.replace('/');
+        })
+        .catch((error) => {
+          console.log(error);
+          showError('Error al iniciar sesión con Google');
+        });
+    }
+  }, [response]);
+
   const showError = (message: string) => {
     setErrorMessage(message);
 
@@ -41,30 +71,6 @@ export default function LoginScreen() {
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-
-  const handleCreateAccount = () => {
-    if (!email || !password) {
-      Alert.alert('Campos incompletos', 'Por favor llena todos los espacios');
-      return;
-    }
-
-    if (password.length < 8) {
-      Alert.alert(
-        'Contraseña inválida',
-        'La contraseña debe tener al menos 8 caracteres',
-      );
-      return;
-    }
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        Alert.alert('Éxito', 'Cuenta creada correctamente');
-        console.log(userCredential.user);
-      })
-      .catch((error) => {
-        Alert.alert('Error', error.message);
-      });
-  };
 
   const handleSignIn = () => {
     setErrorMessage('');
@@ -151,6 +157,19 @@ export default function LoginScreen() {
             }}
           >
             <Text style={styles.registerButtonText}>Registrarse</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={() => promptAsync()}
+            disabled={!request}
+          >
+            <Image
+              source={{
+                uri: 'https://developers.google.com/identity/images/g-logo.png',
+              }}
+              style={styles.googleIcon}
+            />
+            <Text style={styles.googleButtonText}>Continuar con Google</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -325,5 +344,28 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     textAlign: 'center',
     marginLeft: 4,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DADCE0',
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
+    marginTop: theme.spacing.md,
+  },
+
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+
+  googleButtonText: {
+    color: '#3C4043',
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: '500',
   },
 });
