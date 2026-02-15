@@ -1,137 +1,175 @@
-import React, { useState } from 'react';
+import { theme } from '@/constants/theme';
+import { firebaseConfig } from '@/firebase-config';
+import { useRouter } from 'expo-router';
+import { initializeApp } from 'firebase/app';
+import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import React from 'react';
 import {
-  View,
-  Text,
+  Animated,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/hooks/useAuth';
-import { theme } from '@/constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+require('@/assets/images/icon.png');
 
-export default function RegisterScreen() {
-  const router = useRouter();
-  const { register } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+export default function LoginScreen() {
+  //Constantes de alertas
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const [alertTitle, setAlertTitle] = React.useState('');
+  const [alertMessage, setAlertMessage] = React.useState('');
+  const scaleAnim = React.useRef(new Animated.Value(0)).current;
 
-  const handleRegister = async () => {
+  const showAlert = (title: string, message: string) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeAlert = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setAlertVisible(false));
+  };
+  //Constantes Firebase
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  ///Crear Cuenta
+  const handleCreateAccount = async () => {
     if (!name || !email || !password || !confirmPassword) {
-      setError('Por favor completa todos los campos');
+      showAlert('Campos incompletos', 'Por favor llena todos los campos');
+      return;
+    }
+
+    if (password.length < 8) {
+      showAlert(
+        'Contraseña inválida',
+        'La contraseña debe tener al menos 8 caracteres',
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      showAlert('Error', 'Las contraseñas no coinciden');
       return;
     }
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
     try {
-      await register(name, email, password);
-      router.replace('/(app)');
-    } catch (err) {
-      setError('Error al registrar la cuenta');
-    } finally {
-      setLoading(false);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      router.replace('/(auth)/login');
+      showAlert('Éxito', 'Cuenta creada correctamente');
+
+      console.log(userCredential.user);
+    } catch (error: any) {
+      showAlert('Error', error.message);
     }
   };
 
+  const router = useRouter();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <View style={styles.content}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButton}>← Atrás</Text>
-          </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <SafeAreaView style={styles.container}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.card}>
+            <Image
+              source={require('@/assets/images/logo.png')}
+              style={styles.logo}
+            />
+            <Text style={styles.title}>Bee- Smart</Text>
+            <Text style={styles.subtitle}>Suite de manejo</Text>
+            <Text style={styles.index}>Nombre completo</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombres y Apellidos"
+              placeholderTextColor={theme.colors.mediumGray}
+              autoCapitalize="none"
+              onChangeText={(Text) => setName(Text)}
+            />
+            <Text style={styles.index}>Correo Electronico</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ejemplo@gmail.com"
+              placeholderTextColor={theme.colors.mediumGray}
+              autoCapitalize="none"
+              onChangeText={(Text) => setEmail(Text)}
+            />
+            <Text style={styles.index}>Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Insgresa tu Constraseña"
+              placeholderTextColor={theme.colors.mediumGray}
+              autoCapitalize="none"
+              onChangeText={(Text) => setPassword(Text)}
+              secureTextEntry={true}
+            />
+            <Text style={styles.index}>Confirmar Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Repite tu contraseña"
+              placeholderTextColor={theme.colors.mediumGray}
+              autoCapitalize="none"
+              onChangeText={setConfirmPassword}
+              secureTextEntry={true}
+            />
 
-          <Text style={styles.title}>Crear Cuenta</Text>
-          <Text style={styles.subtitle}>Únete a nosotros hoy</Text>
-
-          {error && <Text style={styles.error}>{error}</Text>}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre completo"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={name}
-            onChangeText={setName}
-            editable={!loading}
-            autoCapitalize="words"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Correo electrónico"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={email}
-            onChangeText={setEmail}
-            editable={!loading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={password}
-            onChangeText={setPassword}
-            editable={!loading}
-            secureTextEntry
-            autoCapitalize="none"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Confirmar contraseña"
-            placeholderTextColor={theme.colors.mediumGray}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            editable={!loading}
-            secureTextEntry
-            autoCapitalize="none"
-          />
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.white} />
-            ) : (
-              <Text style={styles.buttonText}>Registrarse</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>¿Ya tienes cuenta? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-              <Text style={styles.footerLink}>Inicia sesión</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleCreateAccount}
+            >
+              <Text style={styles.buttonText}>Crear Cuenta</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </ScrollView>
+
+        <Modal transparent visible={alertVisible} animationType="fade">
+          <View style={styles.modalBackground}>
+            <Animated.View
+              style={[styles.alertBox, { transform: [{ scale: scaleAnim }] }]}
+            >
+              <Text style={styles.alertTitle}>{alertTitle}</Text>
+              <Text style={styles.alertMessage}>{alertMessage}</Text>
+
+              <TouchableOpacity style={styles.alertButton} onPress={closeAlert}>
+                <Text style={styles.alertButtonText}>Aceptar</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -143,51 +181,127 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
+  scrollView: {
+    flexGrow: 1,
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+  card: {
+    width: 320,
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.mediumGray,
+    borderWidth: 2,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    elevation: 4,
+  },
+  passwordInfo: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 70,
+    marginBottom: -20,
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: -5,
+  },
   content: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
-  backButton: {
-    color: theme.colors.darkGray,
-    fontSize: theme.typography.body.fontSize,
-    marginBottom: theme.spacing.lg,
+  Space: {
+    marginBottom: theme.spacing.md,
   },
   title: {
     fontSize: theme.typography.heading.fontSize,
     fontWeight: theme.typography.heading.fontWeight,
     color: theme.colors.black,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: theme.typography.body.fontSize,
+    fontSize: theme.typography.caption.fontSize,
     color: theme.colors.darkGray,
     textAlign: 'center',
+    marginTop: -10,
+    marginBottom: theme.spacing.xs,
+  },
+  index: {
+    fontSize: theme.typography.caption.fontSize,
+    color: theme.colors.black,
+    textAlign: 'left',
+    marginBottom: theme.spacing.sm,
+    fontWeight: '600',
+  },
+  term: {
+    fontSize: theme.typography.term.fontSize,
+    color: theme.colors.primary,
+    textAlign: 'center',
     marginBottom: theme.spacing.xl,
+    marginTop: 4,
   },
   input: {
     borderWidth: 1,
     borderColor: theme.colors.mediumGray,
-    borderRadius: theme.borderRadius,
+    borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
     marginBottom: theme.spacing.md,
-    fontSize: theme.typography.body.fontSize,
+    fontSize: theme.typography.caption.fontSize,
     color: theme.colors.black,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.lightGray,
   },
   button: {
-    backgroundColor: theme.colors.black,
-    borderRadius: theme.borderRadius,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     alignItems: 'center',
     marginTop: theme.spacing.md,
+  },
+  buttonRegister: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: '600',
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
+    color: theme.colors.white,
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: '600',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.mediumGray,
+    marginVertical: theme.spacing.md,
+  },
+  guestButton: {
+    backgroundColor: theme.colors.secondary,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.white,
+    paddingVertical: theme.spacing.md,
+    marginTop: theme.spacing.xs,
+    alignItems: 'center',
+  },
+  guestButtonText: {
     color: theme.colors.white,
     fontSize: theme.typography.body.fontSize,
     fontWeight: '600',
@@ -199,9 +313,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    gap: 5,
+    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.sm,
   },
   footerText: {
     color: theme.colors.darkGray,
@@ -210,6 +326,53 @@ const styles = StyleSheet.create({
   footerLink: {
     color: theme.colors.black,
     fontSize: theme.typography.body.fontSize,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: theme.colors.error,
+    fontSize: 10,
+    marginTop: 3,
+    marginBottom: 3,
+    textAlign: 'center',
+    marginLeft: 4,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  alertBox: {
+    width: 280,
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: 'center',
+  },
+
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: theme.colors.black,
+  },
+
+  alertMessage: {
+    textAlign: 'center',
+    marginBottom: 20,
+    color: theme.colors.darkGray,
+  },
+
+  alertButton: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: theme.borderRadius.md,
+  },
+
+  alertButtonText: {
+    color: theme.colors.white,
     fontWeight: '600',
   },
 });

@@ -146,7 +146,9 @@ export default function LoginScreen() {
           <View style={styles.divider} />
           <TouchableOpacity
             style={styles.buttonRegister}
-            onPress={handleCreateAccount}
+            onPress={() => {
+              router.replace('/(auth)/register');
+            }}
           >
             <Text style={styles.registerButtonText}>Registrarse</Text>
           </TouchableOpacity>
