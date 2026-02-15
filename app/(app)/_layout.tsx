@@ -4,16 +4,9 @@ import { Tabs } from 'expo-router';
 import { FileText, Hexagon, Home, Grid } from 'lucide-react-native';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import ColmenasIcon from '@/components/ColmenasIcon';
 
-// Componente personalizado para el icono de colmenas
-const ColmenasIcon = ({ color, size = 24 }: { color: string; size?: number }) => {
-  return (
-    <View style={[styles.colmenasContainer, { width: size, height: size }]}>
-      <View style={[styles.hexagon, { borderColor: color }]} />
-      <View style={[styles.hexagon, { borderColor: color }]} />
-    </View>
-  );
-};
+
 
 const styles = StyleSheet.create({
   colmenasContainer: {
@@ -45,7 +38,7 @@ export default function AppLayout() {
   return (
     <Tabs screenOptions={tabBarOptions}>
       <Tabs.Screen
-        name="index"
+        name="home_page"
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color }) => <Home color={color} size={24} />,
@@ -59,21 +52,21 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="page1"
+        name="colmenas_page"
         options={{
           title: 'Colmenas',
           tabBarIcon: ({ color }) => <ColmenasIcon color={color} size={24} />,
         }}
       />
       <Tabs.Screen
-        name="page2"
+        name="inspecciones_page"
         options={{
           title: 'Inspecciones',
           tabBarIcon: ({ color }) => <FileText color={color} size={24} />,
         }}
       />
       <Tabs.Screen
-        name="page3"
+        name="produccion_page"
         options={{
           title: 'Produccion',
           tabBarIcon: ({ color }) => <FileText color={color} size={24} />,

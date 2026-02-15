@@ -27,6 +27,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ApiarioDetailScreen() {
   const router = useRouter();
@@ -196,7 +197,7 @@ export default function ApiarioDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -207,13 +208,13 @@ export default function ApiarioDetailScreen() {
           <Text style={styles.headerTitle}>Cargando...</Text>
           <View style={{ width: 40 }} />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!apiario) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -224,12 +225,12 @@ export default function ApiarioDetailScreen() {
           <Text style={styles.headerTitle}>No encontrado</Text>
           <View style={{ width: 40 }} />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -418,7 +419,7 @@ export default function ApiarioDetailScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 

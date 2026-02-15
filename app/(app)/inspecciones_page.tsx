@@ -1,46 +1,46 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
 import { theme } from '@/constants/theme';
 
-export default function Page3Screen() {
+export default function Page2Screen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Header />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
-          <Text style={styles.title}>Página 3</Text>
+          <Text style={styles.title}>Página 2</Text>
           <Text style={styles.description}>
-            Esta es la tercera página de contenido. Completa la plantilla de navegación de tu aplicación.
+            Esta es la segunda página -- de contenido. Es un espacio listo para expandirse con tus propias características.
           </Text>
         </View>
 
         <View style={styles.contentBox}>
-          <Text style={styles.contentTitle}>Configuración Completada</Text>
+          <Text style={styles.contentTitle}>Plantilla Base</Text>
           <Text style={styles.contentText}>
-            Tu aplicación está lista con todos los componentes esenciales para un proyecto móvil moderno.
+            Esta aplicación sirve como una plantilla sólida para iniciar proyectos más grandes y complejos.
           </Text>
         </View>
 
         <View style={styles.contentBox}>
-          <Text style={styles.contentTitle}>Tecnologías Implementadas</Text>
+          <Text style={styles.contentTitle}>Estructura Modular</Text>
           <Text style={styles.contentText}>
-            • React Native{'\n'}
-            • TypeScript{'\n'}
-            • Expo Router{'\n'}
-            • AsyncStorage para persistencia{'\n'}
-            • Lucide React Native para iconos
+            • Contexto de autenticación configurado{'\n'}
+            • Componentes reutilizables{'\n'}
+            • Sistema de rutas con expo-router{'\n'}
+            • TypeScript para mayor seguridad
           </Text>
         </View>
 
         <View style={styles.contentBox}>
-          <Text style={styles.contentTitle}>Listo para Expandir</Text>
+          <Text style={styles.contentTitle}>Próximos Pasos</Text>
           <Text style={styles.contentText}>
-            Ahora puedes comenzar a agregar funcionalidades específicas de tu proyecto. La estructura está lista para escalar.
+            Puedes agregar funcionalidades específicas, integrar APIs, o expandir la lógica de negocio según sea necesario.
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

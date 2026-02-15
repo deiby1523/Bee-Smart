@@ -4,9 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
+  TextInput,
+  Platform,
 } from 'react-native';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar } from 'lucide-react-native';
 import { theme } from '@/constants/theme';
 
@@ -28,9 +29,14 @@ export default function DatePickerField({
     value ? new Date(value) : new Date()
   );
 
-  const handleDateChange = (selectedDate: Date) => {
-    setDate(selectedDate);
-    onDateChange(selectedDate.toISOString().split('T')[0]);
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+    }
+    if (selectedDate) {
+      setDate(selectedDate);
+      onDateChange(selectedDate.toISOString().split('T')[0]);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -51,39 +57,15 @@ export default function DatePickerField({
         </Text>
       </TouchableOpacity>
 
-      <Modal
-        visible={showPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.pickerContainer}>
-            <View style={styles.pickerHeader}>
-              <TouchableOpacity onPress={() => setShowPicker(false)}>
-                <Text style={styles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>Seleccionar Fecha</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  handleDateChange(date);
-                  setShowPicker(false);
-                }}
-              >
-                <Text style={styles.confirmText}>Aceptar</Text>
-              </TouchableOpacity>
-            </View>
-
-            <DatePicker
-              date={date}
-              onDateChange={setDate}
-              mode="date"
-              locale="es"
-              style={styles.picker}
-            />
-          </View>
-        </View>
-      </Modal>
+      {showPicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateChange}
+          locale="es-ES"
+        />
+      )}
     </View>
   );
 }
@@ -116,42 +98,5 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: theme.colors.mediumGray,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  pickerContainer: {
-    backgroundColor: theme.colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  pickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.mediumGray,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.black,
-  },
-  cancelText: {
-    fontSize: 14,
-    color: theme.colors.darkGray,
-    fontWeight: '600',
-  },
-  confirmText: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  picker: {
-    height: 220,
   },
 });

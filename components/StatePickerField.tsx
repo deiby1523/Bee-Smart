@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-} from 'react-native';
+import { theme } from '@/constants/theme';
 import { Picker } from '@react-native-picker/picker';
 import { ChevronDown } from 'lucide-react-native';
-import { theme } from '@/constants/theme';
+import React, { useRef } from 'react';
+import {
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 interface StatePickerFieldProps {
   label: string;
@@ -25,14 +24,17 @@ export default function StatePickerField({
   onStateChange,
   options = DEFAULT_STATES,
 }: StatePickerFieldProps) {
-  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<Picker<string>>(null);
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TouchableOpacity
         style={styles.input}
-        onPress={() => setShowPicker(true)}
+        onPress={() => {
+          // Trigger picker directly
+          pickerRef.current?.focus();
+        }}
       >
         <Text style={[styles.stateText, !value && styles.placeholderText]}>
           {value || 'Seleccionar estado'}
@@ -40,39 +42,22 @@ export default function StatePickerField({
         <ChevronDown size={18} color={theme.colors.primary} />
       </TouchableOpacity>
 
-      <Modal
-        visible={showPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPicker(false)}
+      {/* Hidden picker that opens when input is pressed */}
+      <Picker
+        ref={pickerRef}
+        selectedValue={value}
+        onValueChange={(itemValue) => {
+          if (itemValue !== '') {
+            onStateChange(itemValue);
+          }
+        }}
+        style={styles.picker}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.pickerContainer}>
-            <View style={styles.pickerHeader}>
-              <Text style={styles.headerTitle}>Seleccionar Estado</Text>
-              <TouchableOpacity onPress={() => setShowPicker(false)}>
-                <Text style={styles.closeText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Picker
-              selectedValue={value}
-              onValueChange={(itemValue) => {
-                if (itemValue !== '') {
-                  onStateChange(itemValue);
-                  setShowPicker(false);
-                }
-              }}
-              style={styles.picker}
-            >
-              <Picker.Item label="Seleccionar estado..." value="" />
-              {options.map((state) => (
-                <Picker.Item key={state} label={state} value={state} />
-              ))}
-            </Picker>
-          </View>
-        </View>
-      </Modal>
+        <Picker.Item label="Seleccionar estado..." value="" />
+        {options.map((state) => (
+          <Picker.Item key={state} label={state} value={state} />
+        ))}
+      </Picker>
     </View>
   );
 }
@@ -106,36 +91,8 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: theme.colors.mediumGray,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  pickerContainer: {
-    backgroundColor: theme.colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '60%',
-  },
-  pickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.mediumGray,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.black,
-  },
-  closeText: {
-    fontSize: 24,
-    color: theme.colors.darkGray,
-  },
   picker: {
-    height: 220,
+    height: 0,
+    display: 'none',
   },
 });

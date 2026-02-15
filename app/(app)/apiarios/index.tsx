@@ -5,7 +5,7 @@ import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
 import { initDatabase } from '@/src/services/database';
 import { Apiario } from '@/types/apiario';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Edit2, Plus, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -16,6 +16,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ApiarioWithStats extends Apiario {
   totalColmenas: number;
@@ -43,6 +44,12 @@ export default function ApiariosList() {
     };
     setupAndLoad();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
     try {
@@ -186,7 +193,7 @@ export default function ApiariosList() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mis Apiarios</Text>
         <TouchableOpacity
@@ -246,7 +253,7 @@ export default function ApiariosList() {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
