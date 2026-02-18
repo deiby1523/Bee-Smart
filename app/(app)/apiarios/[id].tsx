@@ -233,16 +233,6 @@ export default function ApiarioDetailScreen() {
     const [producciones, setProducciones] = useState<any[]>([]);
     const [productos, setProductos] = useState<any[]>([]);
 
-    const [showNewIns, setShowNewIns] = useState(false);
-    const [insFecha, setInsFecha] = useState('');
-    const [insEstado, setInsEstado] = useState('');
-    const [insObs, setInsObs] = useState('');
-
-    const [showNewProd, setShowNewProd] = useState(false);
-    const [prodFecha, setProdFecha] = useState('');
-    const [prodCantidad, setProdCantidad] = useState('');
-    const [prodProducto, setProdProducto] = useState<number | null>(null);
-
     useEffect(() => {
       (async () => {
         try {
@@ -259,89 +249,33 @@ export default function ApiarioDetailScreen() {
       })();
     }, [colmenaId]);
 
-    const saveIns = async () => {
-      if (!insFecha) { Alert.alert('Fecha requerida'); return; }
-      try {
-        await inspeccionService.createInspeccion({ fecha_inspeccion: insFecha, estado_colmena: insEstado || undefined, observaciones: insObs || undefined, id_colmena: colmenaId } as any);
-        setShowNewIns(false);
-        setInsFecha(''); setInsEstado(''); setInsObs('');
-        const ins = await inspeccionService.getInspeccionesByColmena(colmenaId);
-        setInspecciones(ins);
-      } catch (e) { console.error(e); Alert.alert('Error', 'No se pudo crear inspección'); }
-    };
-
-    const saveProd = async () => {
-      if (!prodFecha || !prodCantidad || !prodProducto) { Alert.alert('Datos incompletos'); return; }
-      try {
-        await produccionService.createProduccion({ fecha_cosecha: prodFecha, cantidad: parseFloat(prodCantidad), id_colmena: colmenaId, id_apiario: apiarioId, id_producto: prodProducto } as any);
-        setShowNewProd(false);
-        setProdFecha(''); setProdCantidad(''); setProdProducto(null);
-        const prods = await produccionService.getProduccionByColmena(colmenaId);
-        const prodList = await productoService.getAllProductos();
-        const prodsAug = prods.map((p: any) => ({ ...p, productoNombre: prodList.find((x: any) => x.id_producto === p.id_producto)?.nombre }));
-        setProducciones(prodsAug);
-      } catch (e) { console.error(e); Alert.alert('Error', 'No se pudo crear producción'); }
-    };
-
     return (
       <View style={{ padding: theme.spacing.md, backgroundColor: theme.colors.white }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontWeight: '700' }}>Inspecciones ({inspecciones.length})</Text>
-          <TouchableOpacity onPress={() => setShowNewIns((s) => !s)} style={{ padding: 6 }}>
-            <Plus size={14} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-        {showNewIns && (
-          <View style={{ marginTop: theme.spacing.sm }}>
-            <DatePickerField label="Fecha" value={insFecha} onDateChange={setInsFecha} />
-            <StatePickerField label="Estado" value={insEstado} onStateChange={setInsEstado} />
-            <TextInput style={styles.input} placeholder="Observaciones" value={insObs} onChangeText={setInsObs} />
-            <View style={{ flexDirection: 'row', marginTop: theme.spacing.sm }}>
-              <TouchableOpacity style={styles.saveButton} onPress={saveIns}><Text style={styles.saveButtonText}>Guardar</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowNewIns(false)}><Text style={styles.cancelButtonText}>Cancelar</Text></TouchableOpacity>
+        <Text style={{ fontWeight: '700', marginBottom: theme.spacing.sm }}>Inspecciones ({inspecciones.length})</Text>
+        {inspecciones.length === 0 ? (
+          <Text style={{ color: theme.colors.darkGray }}>Sin inspecciones registradas</Text>
+        ) : (
+          inspecciones.map((it: any) => (
+            <View key={it.id_inspeccion} style={{ marginTop: theme.spacing.sm, padding: theme.spacing.sm, backgroundColor: theme.colors.lightGray, borderRadius: 8 }}>
+              <Text style={{ fontSize: 12 }}>{new Date(it.fecha_inspeccion).toLocaleDateString()} {it.estado_colmena ? `- ${it.estado_colmena}` : ''}</Text>
+              {it.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{it.observaciones}</Text> : null}
             </View>
-          </View>
+          ))
         )}
-
-        {inspecciones.map((it) => (
-          <View key={it.id_inspeccion} style={{ marginTop: theme.spacing.sm, padding: theme.spacing.sm, backgroundColor: theme.colors.lightGray, borderRadius: 8 }}>
-            <Text style={{ fontSize: 12 }}>{new Date(it.fecha_inspeccion).toLocaleDateString()} {it.estado_colmena ? `- ${it.estado_colmena}` : ''}</Text>
-            {it.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{it.observaciones}</Text> : null}
-          </View>
-        ))}
 
         <View style={{ height: theme.spacing.md }} />
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontWeight: '700' }}>Producción ({producciones.length})</Text>
-          <TouchableOpacity onPress={() => setShowNewProd((s) => !s)} style={{ padding: 6 }}>
-            <Plus size={14} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        {showNewProd && (
-          <View style={{ marginTop: theme.spacing.sm }}>
-            <DatePickerField label="Fecha" value={prodFecha} onDateChange={setProdFecha} />
-            <TextInput style={styles.input} placeholder="Cantidad" value={prodCantidad} onChangeText={setProdCantidad} keyboardType="numeric" />
-            <View style={styles.pickerContainer}>
-              <Picker selectedValue={prodProducto} onValueChange={(v) => setProdProducto(v)}>
-                <Picker.Item label="Seleccionar..." value={null} />
-                {productos.map((p) => (<Picker.Item key={p.id_producto} label={p.nombre} value={p.id_producto} />))}
-              </Picker>
+        <Text style={{ fontWeight: '700', marginBottom: theme.spacing.sm }}>Producción ({producciones.length})</Text>
+        {producciones.length === 0 ? (
+          <Text style={{ color: theme.colors.darkGray }}>Sin registros de producción</Text>
+        ) : (
+          producciones.map((p: any) => (
+            <View key={p.id_produccion} style={{ marginTop: theme.spacing.sm, padding: theme.spacing.sm, backgroundColor: theme.colors.lightGray, borderRadius: 8 }}>
+              <Text style={{ fontSize: 12 }}>{new Date(p.fecha_cosecha).toLocaleDateString()} - {p.cantidad} {p.productoNombre ? `(${p.productoNombre})` : ''}</Text>
+              {p.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{p.observaciones}</Text> : null}
             </View>
-            <View style={{ flexDirection: 'row', marginTop: theme.spacing.sm }}>
-              <TouchableOpacity style={styles.saveButton} onPress={saveProd}><Text style={styles.saveButtonText}>Guardar</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowNewProd(false)}><Text style={styles.cancelButtonText}>Cancelar</Text></TouchableOpacity>
-            </View>
-          </View>
+          ))
         )}
-
-        {producciones.map((p) => (
-          <View key={p.id_produccion} style={{ marginTop: theme.spacing.sm, padding: theme.spacing.sm, backgroundColor: theme.colors.lightGray, borderRadius: 8 }}>
-            <Text style={{ fontSize: 12 }}>{new Date(p.fecha_cosecha).toLocaleDateString()} - {p.cantidad} {p.productoNombre ? `(${p.productoNombre})` : ''}</Text>
-            {p.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{p.observaciones}</Text> : null}
-          </View>
-        ))}
       </View>
     );
   }
