@@ -48,4 +48,6 @@ export interface Produccion {
   id_colmena: number;
   id_apiario: number;
   id_producto: number;
+  // runtime helper
+  productoNombre?: string;
 }

@@ -1,5 +1,5 @@
-import PhotoPicker from '@/components/PhotoPicker';
 import DatePickerField from '@/components/DatePickerField';
+import PhotoPicker from '@/components/PhotoPicker';
 import StatePickerField from '@/components/StatePickerField';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
