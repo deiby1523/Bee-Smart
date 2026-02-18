@@ -1,3 +1,4 @@
+import ColmenaDetail from '@/components/ColmenaDetail';
 import DatePickerField from '@/components/DatePickerField';
 import PhotoPicker from '@/components/PhotoPicker';
 import StatePickerField from '@/components/StatePickerField';
@@ -15,7 +16,6 @@ import {
     Plus,
     Trash2,
 } from 'lucide-react-native';
-import ColmenaDetail from '@/components/ColmenaDetail';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,

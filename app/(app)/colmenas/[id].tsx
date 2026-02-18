@@ -1,6 +1,6 @@
-import React from 'react';
 import ColmenaDetail from '@/components/ColmenaDetail';
 import { useLocalSearchParams } from 'expo-router';
+import React from 'react';
 
 // simple wrapper
 export default function ColmenaDetailScreen() {
