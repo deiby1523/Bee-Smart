@@ -6,7 +6,7 @@ import { initDatabase } from '@/src/services/database';
 import { inspeccionService } from '@/src/services/inspeccionService';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ChevronRight, Hexagon } from 'lucide-react-native';
+import { Hexagon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,

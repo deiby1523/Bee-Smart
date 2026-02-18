@@ -7,11 +7,7 @@ import { inspeccionService } from '@/src/services/inspeccionService';
 import { produccionService } from '@/src/services/produccionService';
 import { productoService } from '@/src/services/productoService';
 import { Apiario, Colmena, Inspeccion, Produccion, Producto } from '@/types/apiario';
-
-// extended version with runtime helper field
-interface ProduccionWithExtras extends Produccion {
-  productoNombre?: string;
-}
+import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
     ChevronLeft,
@@ -32,8 +28,12 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// extended version with runtime helper field
+interface ProduccionWithExtras extends Produccion {
+  productoNombre?: string;
+}
 
 export default function ColmenaDetailScreen() {
   const router = useRouter();
