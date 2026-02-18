@@ -33,6 +33,7 @@ export default function ColmenasScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(null);
 
   useEffect(() => {
     const setupAndLoad = async () => {
@@ -142,7 +143,7 @@ export default function ColmenasScreen() {
   const renderColmenaItem = ({ item }: { item: ColmenaWithApiario }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/colmenas/${item.id_colmena}` as any)}
+      onPress={() => setExpandedColmenaId(prev => prev === item.id_colmena ? null : item.id_colmena)}
       activeOpacity={0.7}
     >
       {item.foto_url && (
@@ -170,11 +171,10 @@ export default function ColmenasScreen() {
               <Text style={styles.estadoText}>{item.estado_general}</Text>
             </View>
           )}
-          <ChevronRight size={20} color={theme.colors.primary} />
         </View>
       </View>
       {item.observaciones && (
-        <Text style={styles.observaciones} numberOfLines={2}>
+        <Text style={styles.observaciones} numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}>
           {item.observaciones}
         </Text>
       )}

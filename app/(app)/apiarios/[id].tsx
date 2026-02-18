@@ -39,6 +39,7 @@ export default function ApiarioDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [showNewColmenaModal, setShowNewColmenaModal] = useState(false);
   const [editingColmenaId, setEditingColmenaId] = useState<number | null>(null);
+  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(null);
 
   // Form states para crear/editar colmena
   const [codigoColmena, setCodigoColmena] = useState('');
@@ -170,7 +171,7 @@ export default function ApiarioDetailScreen() {
     <TouchableOpacity
       style={styles.colmenaCard}
       activeOpacity={0.7}
-      onPress={() => router.push(`/colmenas/${item.id_colmena}` as any)}
+      onPress={() => setExpandedColmenaId(prev => prev === item.id_colmena ? null : item.id_colmena)}
     >
       {item.foto_url && (
         <Image
@@ -214,7 +215,7 @@ export default function ApiarioDetailScreen() {
       )}
 
       {item.observaciones && (
-        <Text style={styles.colmenaObservaciones} numberOfLines={2}>
+        <Text style={styles.colmenaObservaciones} numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}>
           {item.observaciones}
         </Text>
       )}
