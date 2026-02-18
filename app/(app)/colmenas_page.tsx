@@ -2,6 +2,7 @@ import SearchFilter from '@/components/SearchFilter';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
 import { colmenaService } from '@/src/services/colmenaService';
+import { inspeccionService } from '@/src/services/inspeccionService';
 import { initDatabase } from '@/src/services/database';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -20,6 +21,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ColmenaWithApiario extends Colmena {
   apiarioNombre?: string;
+  ultima_inspeccion_fecha?: string;
+  ultima_inspeccion_estado?: string;
 }
 
 export default function ColmenasScreen() {
@@ -68,7 +71,24 @@ export default function ColmenasScreen() {
         }));
         allColmenas.push(...colmenasConApiario);
       }
-      setColmenas(allColmenas);
+
+      // agregar datos de última inspección para cada colmena
+      const augmented = await Promise.all(
+        allColmenas.map(async (col) => {
+          try {
+            const last = await inspeccionService.getLastInspeccionByColmena(col.id_colmena);
+            return {
+              ...col,
+              ultima_inspeccion_fecha: last?.fecha_inspeccion,
+              ultima_inspeccion_estado: last?.estado_colmena,
+            };
+          } catch (e) {
+            console.error('Error cargando última inspección', e);
+            return col;
+          }
+        })
+      );
+      setColmenas(augmented);
     } catch (error) {
       Alert.alert('Error', 'No se pudieron cargar las colmenas');
       console.error(error);
@@ -122,7 +142,7 @@ export default function ColmenasScreen() {
   const renderColmenaItem = ({ item }: { item: ColmenaWithApiario }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/apiarios/${item.id_apiario}` as any)}
+      onPress={() => router.push(`/colmenas/${item.id_colmena}` as any)}
       activeOpacity={0.7}
     >
       {item.foto_url && (
@@ -136,8 +156,13 @@ export default function ColmenasScreen() {
           <Text style={styles.colmenaCodigo}>{item.codigo_colmena}</Text>
           <Text style={styles.apiarioNombre}>{item.apiarioNombre}</Text>
           <Text style={styles.cardDate}>
-            {new Date(item.fecha_instalacion).toLocaleDateString()}
+            Instalación: {new Date(item.fecha_instalacion).toLocaleDateString()}
           </Text>
+          {item.ultima_inspeccion_fecha && (
+            <Text style={styles.lastInspection}>
+              Últ. insp.: {new Date(item.ultima_inspeccion_fecha).toLocaleDateString()} {item.ultima_inspeccion_estado ? `(${item.ultima_inspeccion_estado})` : ''}
+            </Text>
+          )}
         </View>
         <View style={styles.rightContent}>
           {item.estado_general && (
@@ -290,6 +315,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 140,
     backgroundColor: theme.colors.mediumGray,
+  },
+  lastInspection: {
+    fontSize: 12,
+    color: theme.colors.darkGray,
+    marginTop: theme.spacing.xs,
   },
   cardHeader: {
     flexDirection: 'row',

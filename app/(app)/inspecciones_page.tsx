@@ -160,6 +160,15 @@ export default function InspeccionesPage() {
         await inspeccionService.createInspeccion(payload);
         Alert.alert('Éxito', 'Inspección creada');
       }
+
+      // si se especificó un estado para la colmena, reflejarlo en el registro de la colmena
+      if (estadoColmena && selectedColmena) {
+        try {
+          await colmenaService.updateColmena(selectedColmena, { estado_general: estadoColmena });
+        } catch (err) {
+          console.error('No se pudo actualizar estado de colmena:', err);
+        }
+      }
       setShowModal(false);
       resetForm();
       await loadData();
@@ -381,6 +390,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.secondary,
   },
   cardHeader: {
     flexDirection: 'row',

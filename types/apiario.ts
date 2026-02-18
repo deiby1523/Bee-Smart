@@ -18,6 +18,9 @@ export interface Colmena {
   observaciones?: string;
   id_apiario: number;
   foto_url?: string;
+  // runtime fields
+  ultima_inspeccion_fecha?: string;
+  ultima_inspeccion_estado?: string;
 }
 
 export interface ApiarioWithColmenas extends Apiario {

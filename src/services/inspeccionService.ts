@@ -36,6 +36,19 @@ export const inspeccionService = {
     }
   },
 
+  async getLastInspeccionByColmena(id_colmena: number): Promise<Inspeccion | null> {
+    try {
+      const result = await db.getFirstAsync<Inspeccion>(
+        'SELECT * FROM inspecciones WHERE id_colmena = ? ORDER BY fecha_inspeccion DESC LIMIT 1',
+        [id_colmena]
+      );
+      return result || null;
+    } catch (error) {
+      console.error('Error fetching last inspeccion:', error);
+      throw error;
+    }
+  },
+
   async getAllInspecciones(): Promise<Inspeccion[]> {
     try {
       const result = await db.getAllAsync<Inspeccion>(

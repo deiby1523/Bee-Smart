@@ -431,6 +431,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.secondary,
   },
   cardHeader: {
     flexDirection: 'row',
