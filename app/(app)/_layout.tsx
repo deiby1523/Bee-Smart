@@ -53,13 +53,6 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="colmenas_page"
-        options={{
-          title: 'Colmenas',
-          tabBarIcon: ({ color }) => <ColmenasIcon color={color} size={24} />,
-        }}
-      />
-      <Tabs.Screen
         name="inspecciones_page"
         options={{
           title: 'Inspecciones',
