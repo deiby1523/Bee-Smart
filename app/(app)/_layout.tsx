@@ -1,3 +1,4 @@
+import ColmenasIcon from '@/components/ColmenasIcon';
 import { theme } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
@@ -49,6 +50,13 @@ export default function AppLayout() {
         options={{
           title: 'Apiarios',
           tabBarIcon: ({ color }) => <Hexagon color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="colmenas_page"
+        options={{
+          title: 'Colmenas',
+          tabBarIcon: ({ color }) => <ColmenasIcon color={color} size={24} />,
         }}
       />
       <Tabs.Screen
