@@ -1,4 +1,5 @@
 import DatePickerField from '@/components/DatePickerField';
+import Header from '@/components/Header';
 import SearchFilter from '@/components/SearchFilter';
 import StatePickerField from '@/components/StatePickerField';
 import { theme } from '@/constants/theme';
@@ -9,18 +10,18 @@ import { inspeccionService } from '@/src/services/inspeccionService';
 import { Apiario, Colmena, Inspeccion } from '@/types/apiario';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Edit2, Plus, Trash2 } from 'lucide-react-native';
+import { ChevronRight, ClipboardList, Plus } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -43,13 +44,20 @@ export default function InspeccionesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  // modal states
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedColmena, setSelectedColmena] = useState<number | null>(null);
   const [fechaInspeccion, setFechaInspeccion] = useState('');
   const [estadoColmena, setEstadoColmena] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setSelectedColmena(null);
+    setFechaInspeccion('');
+    setEstadoColmena('');
+    setObservaciones('');
+    setShowModal(false);
+  };
 
   useEffect(() => {
     loadData();
@@ -58,7 +66,7 @@ export default function InspeccionesPage() {
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-    }, [])
+    }, []),
   );
 
   const loadData = async () => {
@@ -69,8 +77,13 @@ export default function InspeccionesPage() {
 
       const allColmenas: ColmenaWithApiario[] = [];
       for (const apiario of apiariosData) {
-        const cols = await colmenaService.getColmenasByApiario(apiario.id_apiario);
-        const augmented = cols.map((c) => ({ ...c, apiarioNombre: apiario.nombre }));
+        const cols = await colmenaService.getColmenasByApiario(
+          apiario.id_apiario,
+        );
+        const augmented = cols.map((c) => ({
+          ...c,
+          apiarioNombre: apiario.nombre,
+        }));
         allColmenas.push(...augmented);
       }
       setColmenas(allColmenas);
@@ -94,57 +107,43 @@ export default function InspeccionesPage() {
     }
   };
 
+  const handleEdit = (item: InspeccionWithExtras) => {
+    setEditingId(item.id_inspeccion);
+    setSelectedColmena(item.id_colmena);
+    setFechaInspeccion(item.fecha_inspeccion);
+    setEstadoColmena(item.estado_colmena || '');
+    setObservaciones(item.observaciones || '');
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    Alert.alert('Eliminar inspección', '¿Deseas eliminar esta inspección?', [
+      { text: 'Cancelar' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await inspeccionService.deleteInspeccion(id);
+            await loadData();
+            setShowModal(false);
+          } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar');
+          }
+        },
+      },
+    ]);
+  };
   const handleRefresh = () => {
     setRefreshing(true);
     loadData();
   };
-
-  const filteredInspecciones = React.useMemo(() => {
-    let result = [...inspecciones];
-    if (activeFilter) {
-      result = result.filter((i) => i.estado_colmena === activeFilter);
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (i) =>
-          i.codigo_colmena?.toLowerCase().includes(q) ||
-          i.observaciones?.toLowerCase().includes(q) ||
-          i.apiarioNombre?.toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [inspecciones, activeFilter, searchQuery]);
-
-  const estadosUnicos = React.useMemo(() => {
-    const setEstados = new Set(
-      inspecciones
-        .map((i) => i.estado_colmena)
-        .filter((e): e is string => !!e)
-    );
-    return Array.from(setEstados).sort();
-  }, [inspecciones]);
-
-  const estadoFilters = estadosUnicos.map((e) => ({ id: e, label: e }));
-
-  const resetForm = () => {
-    setSelectedColmena(null);
-    setFechaInspeccion('');
-    setEstadoColmena('');
-    setObservaciones('');
-    setEditingId(null);
-  };
-
-  const handleOpenNew = () => {
-    resetForm();
-    setShowModal(true);
-  };
-
   const handleSave = async () => {
     if (!selectedColmena || !fechaInspeccion) {
-      Alert.alert('Error', 'Colmena y fecha son requeridas');
+      Alert.alert('Error', 'Colmena y fecha son obligatorias');
       return;
     }
+
     try {
       const payload = {
         fecha_inspeccion: fechaInspeccion,
@@ -155,22 +154,28 @@ export default function InspeccionesPage() {
 
       if (editingId) {
         await inspeccionService.updateInspeccion(editingId, payload);
-        Alert.alert('Éxito', 'Inspección actualizada');
       } else {
         await inspeccionService.createInspeccion(payload);
-        Alert.alert('Éxito', 'Inspección creada');
       }
 
-      // si se especificó un estado para la colmena, reflejarlo en el registro de la colmena
-      if (estadoColmena && selectedColmena) {
+      // actualizar estado general de colmena si se definió
+      if (estadoColmena) {
         try {
-          await colmenaService.updateColmena(selectedColmena, { estado_general: estadoColmena });
+          await colmenaService.updateColmena(selectedColmena, {
+            estado_general: estadoColmena,
+          });
         } catch (err) {
-          console.error('No se pudo actualizar estado de colmena:', err);
+          console.error('No se pudo actualizar estado de colmena', err);
         }
       }
+
       setShowModal(false);
-      resetForm();
+      setEditingId(null);
+      setSelectedColmena(null);
+      setFechaInspeccion('');
+      setEstadoColmena('');
+      setObservaciones('');
+
       await loadData();
     } catch (error) {
       Alert.alert('Error', 'No se pudo guardar la inspección');
@@ -178,122 +183,167 @@ export default function InspeccionesPage() {
     }
   };
 
-  const handleEdit = (item: InspeccionWithExtras) => {
-    resetForm();
-    setEditingId(item.id_inspeccion);
-    setSelectedColmena(item.id_colmena);
-    setFechaInspeccion(item.fecha_inspeccion);
-    setEstadoColmena(item.estado_colmena || '');
-    setObservaciones(item.observaciones || '');
-    setShowModal(true);
-  };
+  const filteredInspecciones = React.useMemo(() => {
+    let result = [...inspecciones];
 
-  const handleDelete = (id: number) => {
-    Alert.alert('Confirmar eliminación', '¿Desea eliminar esta inspección?', [
-      { text: 'Cancelar' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await inspeccionService.deleteInspeccion(id);
-            await loadData();
-            Alert.alert('Éxito', 'Inspección eliminada');
-          } catch (error) {
-            Alert.alert('Error', 'No se pudo eliminar la inspección');
-            console.error(error);
-          }
-        },
-      },
-    ]);
-  };
+    if (activeFilter) {
+      result = result.filter((i) => i.estado_colmena === activeFilter);
+    }
 
-  const renderItem = ({ item }: { item: InspeccionWithExtras }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.codigo_colmena?.toLowerCase().includes(q) ||
+          i.observaciones?.toLowerCase().includes(q) ||
+          i.apiarioNombre?.toLowerCase().includes(q),
+      );
+    }
+
+    return result;
+  }, [inspecciones, activeFilter, searchQuery]);
+
+  const estadosUnicos = React.useMemo(() => {
+    const estados = new Set(
+      inspecciones.map((i) => i.estado_colmena).filter((e): e is string => !!e),
+    );
+
+    return ['Todos', ...Array.from(estados)];
+  }, [inspecciones]);
+
+  const renderItem = ({ item }: { item: InspeccionWithExtras }) => {
+    const isCompletado = item.estado_colmena?.toLowerCase() === 'completado';
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.7}
+        onPress={() => handleEdit(item)}
+      >
+        <View style={styles.iconBox}>
+          <ClipboardList size={26} color={theme.colors.primary} />
+        </View>
+
         <View style={styles.cardContent}>
-          <Text style={styles.itemTitle}>{item.codigo_colmena}</Text>
-          <Text style={styles.itemDate}>
-            {new Date(item.fecha_inspeccion).toLocaleDateString()}
+          <Text style={styles.title}>
+            {item.codigo_colmena || 'Inspección'}
           </Text>
+
+          <Text style={styles.subtitle}>
+            {new Date(item.fecha_inspeccion).toLocaleDateString()} ·{' '}
+            {item.apiarioNombre}
+          </Text>
+
+          {item.estado_colmena && (
+            <View style={styles.estadoRow}>
+              <View
+                style={[
+                  styles.estadoDot,
+                  {
+                    backgroundColor: isCompletado ? '#2ECC71' : '#F39C12',
+                  },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.estadoText,
+                  {
+                    color: isCompletado ? '#2ECC71' : '#F39C12',
+                  },
+                ]}
+              >
+                {item.estado_colmena}
+              </Text>
+            </View>
+          )}
         </View>
-        <View style={styles.actions}>
-          <TouchableOpacity onPress={() => handleEdit(item)} style={styles.actionBtn}>
-            <Edit2 size={16} color={theme.colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id_inspeccion)} style={styles.actionBtn}>
-            <Trash2 size={16} color={theme.colors.error} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {item.estado_colmena && (
-        <View style={styles.estadoBadge}>
-          <Text style={styles.estadoText}>{item.estado_colmena}</Text>
-        </View>
-      )}
-      {item.observaciones && (
-        <Text style={styles.observaciones} numberOfLines={2}>
-          {item.observaciones}
-        </Text>
-      )}
-    </View>
-  );
+
+        <ChevronRight size={20} color="#999" />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Inspecciones</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleOpenNew}>
-          <Plus size={20} color={theme.colors.white} />
+        <Text style={styles.headerTitle}>Inspecciones Guardadas</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setShowModal(true)}
+        >
+          <Plus size={20} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {loading && inspecciones.length === 0 ? (
-        <View style={styles.centerContent}>
-          <Text style={styles.emptyText}>Cargando...</Text>
-        </View>
-      ) : inspecciones.length === 0 ? (
-        <View style={styles.centerContent}>
-          <Text style={styles.emptyText}>No hay inspecciones aún</Text>
-        </View>
-      ) : (
-        <>
-          {inspecciones.length > 0 && (
-            <SearchFilter
-              searchValue={searchQuery}
-              onSearchChange={setSearchQuery}
-              onClearSearch={() => setSearchQuery('')}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-              filters={estadoFilters}
-              placeholder="Buscar inspección..."
-            />
-          )}
-          {filteredInspecciones.length === 0 ? (
-            <View style={styles.centerContent}>
-              <Text style={styles.emptyText}>No se encontraron inspecciones</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={filteredInspecciones}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id_inspeccion.toString()}
-              contentContainerStyle={styles.listContent}
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
-          )}
-        </>
-      )}
+      <SearchFilter
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        onClearSearch={() => setSearchQuery('')}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        filters={[]}
+        placeholder="Buscar reportes..."
+      />
 
-      {/* Modal form */}
+      <View style={styles.filtersWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContainer}
+        >
+          {estadosUnicos.map((estado) => {
+            const isActive =
+              (estado === 'Todos' && !activeFilter) || activeFilter === estado;
+
+            return (
+              <TouchableOpacity
+                key={estado}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() =>
+                  setActiveFilter(estado === 'Todos' ? null : estado)
+                }
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    isActive && styles.filterTextActive,
+                  ]}
+                >
+                  {estado}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <FlatList
+        data={filteredInspecciones}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id_inspeccion.toString()}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        contentContainerStyle={{ paddingTop: 10 }}
+      />
+
+      {/* Modal igual al anterior */}
       <Modal visible={showModal} animationType="slide">
         <SafeAreaView style={styles.modalContainer}>
           <ScrollView contentContainerStyle={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingId ? 'Editar inspección' : 'Nueva inspección'}
-            </Text>
-
+            <View
+              style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            >
+              <Text style={styles.modalTitle}>Nueva inspección</Text>
+              {editingId && (
+                <TouchableOpacity
+                  onPress={handleCancelEdit}
+                  style={styles.backEditContainer}
+                >
+                  <Text style={styles.backEditText}>← Cancelar edición</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <Text style={styles.label}>Colmena</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -325,21 +375,26 @@ export default function InspeccionesPage() {
 
             <Text style={styles.label}>Observaciones</Text>
             <TextInput
-              style={[styles.input, { height: 80 }]}
+              style={styles.input}
               multiline
               value={observaciones}
               onChangeText={setObservaciones}
             />
 
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Guardar</Text>
+              <Text style={styles.saveButtonText}>
+                {editingId ? 'Actualizar' : 'Guardar'}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowModal(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
+
+            {editingId && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(editingId)}
+              >
+                <Text style={styles.deleteButtonText}>Eliminar inspección</Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -350,137 +405,198 @@ export default function InspeccionesPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#F2F2F2',
   },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.mediumGray,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F2F2F2',
   },
+
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.black,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111',
   },
+
   addButton: {
+    position: 'absolute',
+    right: 16,
+    top: 10,
     backgroundColor: theme.colors.primary,
-    padding: theme.spacing.sm,
+    padding: 8,
     borderRadius: 8,
   },
-  centerContent: {
-    flex: 1,
+
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+
+  iconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#F6E3CF',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.md,
+    marginRight: 12,
   },
-  emptyText: {
-    fontSize: theme.typography.body.fontSize,
-    color: theme.colors.darkGray,
+
+  cardContent: {
+    flex: 1,
   },
-  listContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-  },
-  card: {
-    backgroundColor: theme.colors.lightGray,
-    borderRadius: 12,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.secondary,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardContent: {},
-  itemTitle: {
+
+  title: {
     fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.black,
+    fontWeight: '700',
+    color: '#222',
   },
-  itemDate: {
-    fontSize: 12,
-    color: theme.colors.darkGray,
+
+  subtitle: {
+    fontSize: 13,
+    color: '#777',
+    marginTop: 2,
   },
-  actions: {
+
+  estadoRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
   },
-  actionBtn: {
-    marginLeft: theme.spacing.sm,
+
+  estadoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
   },
-  estadoBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.secondary,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: 8,
-    marginTop: theme.spacing.sm,
-  },
+
   estadoText: {
-    color: theme.colors.white,
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '500',
   },
-  observaciones: {
-    marginTop: theme.spacing.sm,
-    fontSize: theme.typography.body.fontSize,
-    color: theme.colors.darkGray,
-  },
+
   modalContainer: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#fff',
   },
+
   modalContent: {
-    padding: theme.spacing.md,
+    padding: 20,
   },
+
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: theme.spacing.md,
+    marginBottom: 20,
   },
+
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.black,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
+
   input: {
     borderWidth: 1,
-    borderColor: theme.colors.mediumGray,
+    borderColor: '#DDD',
     borderRadius: 8,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.lightGray,
-    marginBottom: theme.spacing.lg,
+    padding: 12,
+    height: 80,
+    marginBottom: 20,
   },
+
   pickerContainer: {
     borderWidth: 1,
-    borderColor: theme.colors.mediumGray,
+    borderColor: '#DDD',
     borderRadius: 8,
-    backgroundColor: theme.colors.lightGray,
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
+
   saveButton: {
     backgroundColor: theme.colors.primary,
-    padding: theme.spacing.md,
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 10,
   },
+
   saveButtonText: {
-    color: theme.colors.white,
+    color: '#fff',
     fontWeight: '600',
   },
+
   cancelButton: {
-    padding: theme.spacing.md,
     alignItems: 'center',
+    padding: 14,
   },
+
   cancelButtonText: {
     color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: '#E74C3C',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  backEditContainer: {
+    marginBottom: 10,
+  },
+
+  backEditText: {
+    color: theme.colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  rowView: {
+    flexDirection: 'row',
+  },
+  filtersWrapper: {
+    height: 50, // 🔥 esto evita que se estire
+    justifyContent: 'center',
+  },
+
+  filtersContainer: {
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#EAEAEA',
+    marginRight: 10,
+    alignSelf: 'center', // 🔥 evita estiramiento
+  },
+
+  filterChipActive: {
+    backgroundColor: theme.colors.primary,
+  },
+
+  filterText: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500',
+  },
+
+  filterTextActive: {
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 });

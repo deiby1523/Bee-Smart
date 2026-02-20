@@ -1,4 +1,5 @@
 import DatePickerField from '@/components/DatePickerField';
+import Header from '@/components/Header';
 import SearchFilter from '@/components/SearchFilter';
 import StatePickerField from '@/components/StatePickerField';
 import { theme } from '@/constants/theme';
@@ -14,12 +15,14 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Hexagon, Plus } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text, TextInput, TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -56,7 +59,9 @@ export default function ColmenasScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(null);
+  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     const setupAndLoad = async () => {
@@ -74,7 +79,7 @@ export default function ColmenasScreen() {
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-    }, [])
+    }, []),
   );
 
   const loadData = async () => {
@@ -87,7 +92,7 @@ export default function ColmenasScreen() {
       const allColmenas: ColmenaWithApiario[] = [];
       for (const apiario of apiariosData) {
         const colmenasDelApiario = await colmenaService.getColmenasByApiario(
-          apiario.id_apiario
+          apiario.id_apiario,
         );
         const colmenasConApiario = colmenasDelApiario.map((col) => ({
           ...col,
@@ -100,7 +105,9 @@ export default function ColmenasScreen() {
       const augmented = await Promise.all(
         allColmenas.map(async (col) => {
           try {
-            const last = await inspeccionService.getLastInspeccionByColmena(col.id_colmena);
+            const last = await inspeccionService.getLastInspeccionByColmena(
+              col.id_colmena,
+            );
             return {
               ...col,
               ultima_inspeccion_fecha: last?.fecha_inspeccion,
@@ -110,7 +117,7 @@ export default function ColmenasScreen() {
             console.error('Error cargando última inspección', e);
             return col;
           }
-        })
+        }),
       );
       setColmenas(augmented);
     } catch (error) {
@@ -143,7 +150,7 @@ export default function ColmenasScreen() {
         (c) =>
           c.codigo_colmena.toLowerCase().includes(query) ||
           (c.apiarioNombre?.toLowerCase().includes(query) ?? false) ||
-          (c.observaciones?.toLowerCase().includes(query) ?? false)
+          (c.observaciones?.toLowerCase().includes(query) ?? false),
       );
     }
 
@@ -153,7 +160,7 @@ export default function ColmenasScreen() {
   // Obtener estados únicos de colmenas
   const estadosUnicos = useMemo(() => {
     const estados = new Set(
-      colmenas.filter((c) => c.estado_general).map((c) => c.estado_general!)
+      colmenas.filter((c) => c.estado_general).map((c) => c.estado_general!),
     );
     return Array.from(estados).sort();
   }, [colmenas]);
@@ -166,14 +173,15 @@ export default function ColmenasScreen() {
   const renderColmenaItem = ({ item }: { item: ColmenaWithApiario }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => setExpandedColmenaId(prev => prev === item.id_colmena ? null : item.id_colmena)}
+      onPress={() =>
+        setExpandedColmenaId((prev) =>
+          prev === item.id_colmena ? null : item.id_colmena,
+        )
+      }
       activeOpacity={0.7}
     >
       {item.foto_url && (
-        <Image
-          source={{ uri: item.foto_url }}
-          style={styles.cardImage}
-        />
+        <Image source={{ uri: item.foto_url }} style={styles.cardImage} />
       )}
       <View style={styles.cardHeader}>
         <View style={styles.cardContent}>
@@ -184,7 +192,11 @@ export default function ColmenasScreen() {
           </Text>
           {item.ultima_inspeccion_fecha && (
             <Text style={styles.lastInspection}>
-              Últ. insp.: {new Date(item.ultima_inspeccion_fecha).toLocaleDateString()} {item.ultima_inspeccion_estado ? `(${item.ultima_inspeccion_estado})` : ''}
+              Últ. insp.:{' '}
+              {new Date(item.ultima_inspeccion_fecha).toLocaleDateString()}{' '}
+              {item.ultima_inspeccion_estado
+                ? `(${item.ultima_inspeccion_estado})`
+                : ''}
             </Text>
           )}
         </View>
@@ -197,139 +209,279 @@ export default function ColmenasScreen() {
         </View>
       </View>
       {item.observaciones && (
-        <Text style={styles.observaciones} numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}>
+        <Text
+          style={styles.observaciones}
+          numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}
+        >
           {item.observaciones}
         </Text>
       )}
       {expandedColmenaId === item.id_colmena && (
-        <ColmenaInlineDetail colmenaId={item.id_colmena} apiarioId={item.id_apiario} />
+        <ColmenaInlineDetail
+          colmenaId={item.id_colmena}
+          apiarioId={item.id_apiario}
+        />
       )}
     </TouchableOpacity>
   );
 
-    function ColmenaInlineDetail({ colmenaId, apiarioId }: { colmenaId: number; apiarioId: number }) {
-      const [inspecciones, setInspecciones] = useState<InspeccionLocal[]>([]);
-      const [producciones, setProducciones] = useState<ProduccionWithExtrasLocal[]>([]);
-      const [productos, setProductos] = useState<any[]>([]);
+  function ColmenaInlineDetail({
+    colmenaId,
+    apiarioId,
+  }: {
+    colmenaId: number;
+    apiarioId: number;
+  }) {
+    const [inspecciones, setInspecciones] = useState<InspeccionLocal[]>([]);
+    const [producciones, setProducciones] = useState<
+      ProduccionWithExtrasLocal[]
+    >([]);
+    const [productos, setProductos] = useState<any[]>([]);
 
-      const [showNewInsForm, setShowNewInsForm] = useState(false);
-      const [insFecha, setInsFecha] = useState('');
-      const [insEstado, setInsEstado] = useState('');
-      const [insObs, setInsObs] = useState('');
+    const [showNewInsForm, setShowNewInsForm] = useState(false);
+    const [insFecha, setInsFecha] = useState('');
+    const [insEstado, setInsEstado] = useState('');
+    const [insObs, setInsObs] = useState('');
 
-      const [showNewProdForm, setShowNewProdForm] = useState(false);
-      const [prodFecha, setProdFecha] = useState('');
-      const [prodCantidad, setProdCantidad] = useState('');
-      const [prodProducto, setProdProducto] = useState<number | null>(null);
+    const [showNewProdForm, setShowNewProdForm] = useState(false);
+    const [prodFecha, setProdFecha] = useState('');
+    const [prodCantidad, setProdCantidad] = useState('');
+    const [prodProducto, setProdProducto] = useState<number | null>(null);
 
-      useEffect(() => {
-        loadInline();
-      }, []);
+    useEffect(() => {
+      loadInline();
+    }, []);
 
-      const loadInline = async () => {
-        try {
-          const ins = await inspeccionService.getInspeccionesByColmena(colmenaId);
-          setInspecciones(ins);
-          const prods = await produccionService.getProduccionByColmena(colmenaId);
-          const prodList = await productoService.getAllProductos();
-          setProductos(prodList);
-          const prodsAug = prods.map((p: any) => ({ ...p, productoNombre: prodList.find((x: any) => x.id_producto === p.id_producto)?.nombre }));
-          setProducciones(prodsAug);
-        } catch (e) {
-          console.error('inline load error', e);
-        }
-      };
+    const loadInline = async () => {
+      try {
+        const ins = await inspeccionService.getInspeccionesByColmena(colmenaId);
+        setInspecciones(ins);
+        const prods = await produccionService.getProduccionByColmena(colmenaId);
+        const prodList = await productoService.getAllProductos();
+        setProductos(prodList);
+        const prodsAug = prods.map((p: any) => ({
+          ...p,
+          productoNombre: prodList.find(
+            (x: any) => x.id_producto === p.id_producto,
+          )?.nombre,
+        }));
+        setProducciones(prodsAug);
+      } catch (e) {
+        console.error('inline load error', e);
+      }
+    };
 
-      const saveIns = async () => {
-        if (!insFecha) { Alert.alert('Fecha requerida'); return; }
-        try {
-          await inspeccionService.createInspeccion({ fecha_inspeccion: insFecha, estado_colmena: insEstado || undefined, observaciones: insObs || undefined, id_colmena: colmenaId } as any);
-          setShowNewInsForm(false);
-          setInsFecha(''); setInsEstado(''); setInsObs('');
-          await loadInline();
-        } catch (e) { console.error(e); Alert.alert('Error', 'No se pudo crear inspección'); }
-      };
+    const saveIns = async () => {
+      if (!insFecha) {
+        Alert.alert('Fecha requerida');
+        return;
+      }
+      try {
+        await inspeccionService.createInspeccion({
+          fecha_inspeccion: insFecha,
+          estado_colmena: insEstado || undefined,
+          observaciones: insObs || undefined,
+          id_colmena: colmenaId,
+        } as any);
+        setShowNewInsForm(false);
+        setInsFecha('');
+        setInsEstado('');
+        setInsObs('');
+        await loadInline();
+      } catch (e) {
+        console.error(e);
+        Alert.alert('Error', 'No se pudo crear inspección');
+      }
+    };
 
-      const saveProd = async () => {
-        if (!prodFecha || !prodCantidad || !prodProducto) { Alert.alert('Datos incompletos'); return; }
-        try {
-          await produccionService.createProduccion({ fecha_cosecha: prodFecha, cantidad: parseFloat(prodCantidad), id_colmena: colmenaId, id_apiario: apiarioId, id_producto: prodProducto } as any);
-          setShowNewProdForm(false);
-          setProdFecha(''); setProdCantidad(''); setProdProducto(null);
-          await loadInline();
-        } catch (e) { console.error(e); Alert.alert('Error', 'No se pudo crear producción'); }
-      };
+    const saveProd = async () => {
+      if (!prodFecha || !prodCantidad || !prodProducto) {
+        Alert.alert('Datos incompletos');
+        return;
+      }
+      try {
+        await produccionService.createProduccion({
+          fecha_cosecha: prodFecha,
+          cantidad: parseFloat(prodCantidad),
+          id_colmena: colmenaId,
+          id_apiario: apiarioId,
+          id_producto: prodProducto,
+        } as any);
+        setShowNewProdForm(false);
+        setProdFecha('');
+        setProdCantidad('');
+        setProdProducto(null);
+        await loadInline();
+      } catch (e) {
+        console.error(e);
+        Alert.alert('Error', 'No se pudo crear producción');
+      }
+    };
 
-      return (
-        <View style={{ padding: 12, backgroundColor: '#f7f7f7' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontWeight: '700' }}>Inspecciones ({inspecciones.length})</Text>
-            <TouchableOpacity onPress={() => setShowNewInsForm((s) => !s)} style={{ padding: 6 }}>
-              <Plus size={14} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-          {showNewInsForm && (
-            <View style={{ marginTop: 8 }}>
-              <DatePickerField label="Fecha" value={insFecha} onDateChange={setInsFecha} />
-              <StatePickerField label="Estado" value={insEstado} onStateChange={setInsEstado} />
-              <TextInput style={styles.input} placeholder="Observaciones" value={insObs} onChangeText={setInsObs} />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity style={styles.saveButton} onPress={saveIns}><Text style={styles.saveButtonText}>Guardar</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={() => setShowNewInsForm(false)}><Text style={styles.cancelButtonText}>Cancelar</Text></TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {inspecciones.map((it) => (
-            <View key={it.id_inspeccion} style={{ marginTop: 8, padding: 8, backgroundColor: 'white', borderRadius: 8 }}>
-              <Text style={{ fontSize: 12 }}>{new Date(it.fecha_inspeccion).toLocaleDateString()} {it.estado_colmena ? `- ${it.estado_colmena}` : ''}</Text>
-              {it.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{it.observaciones}</Text> : null}
-            </View>
-          ))}
-
-          <View style={{ height: 12 }} />
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontWeight: '700' }}>Producción ({producciones.length})</Text>
-            <TouchableOpacity onPress={() => setShowNewProdForm((s) => !s)} style={{ padding: 6 }}>
-              <Plus size={14} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {showNewProdForm && (
-            <View style={{ marginTop: 8 }}>
-              <DatePickerField label="Fecha" value={prodFecha} onDateChange={setProdFecha} />
-              <TextInput style={styles.input} placeholder="Cantidad" value={prodCantidad} onChangeText={setProdCantidad} keyboardType="numeric" />
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={prodProducto}
-                  onValueChange={(v) => setProdProducto(v)}
-                >
-                  <Picker.Item label="Seleccionar..." value={null} />
-                  {productos.map((pr: any) => (
-                    <Picker.Item key={pr.id_producto} label={pr.nombre} value={pr.id_producto} />
-                  ))}
-                </Picker>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity style={styles.saveButton} onPress={saveProd}><Text style={styles.saveButtonText}>Guardar</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={() => setShowNewProdForm(false)}><Text style={styles.cancelButtonText}>Cancelar</Text></TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {producciones.map((p) => (
-            <View key={p.id_produccion} style={{ marginTop: 8, padding: 8, backgroundColor: 'white', borderRadius: 8 }}>
-              <Text style={{ fontSize: 12 }}>{new Date(p.fecha_cosecha).toLocaleDateString()} - {p.cantidad} {p.productoNombre ? `(${p.productoNombre})` : ''}</Text>
-              {p.observaciones ? <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>{p.observaciones}</Text> : null}
-            </View>
-          ))}
+    return (
+      <View style={{ padding: 12, backgroundColor: '#f7f7f7' }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontWeight: '700' }}>
+            Inspecciones ({inspecciones.length})
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowNewInsForm((s) => !s)}
+            style={{ padding: 6 }}
+          >
+            <Plus size={14} color={theme.colors.primary} />
+          </TouchableOpacity>
         </View>
-      );
-    }
+        {showNewInsForm && (
+          <View style={{ marginTop: 8 }}>
+            <DatePickerField
+              label="Fecha"
+              value={insFecha}
+              onDateChange={setInsFecha}
+            />
+            <StatePickerField
+              label="Estado"
+              value={insEstado}
+              onStateChange={setInsEstado}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Observaciones"
+              value={insObs}
+              onChangeText={setInsObs}
+            />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={styles.saveButton} onPress={saveIns}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowNewInsForm(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {inspecciones.map((it) => (
+          <View
+            key={it.id_inspeccion}
+            style={{
+              marginTop: 8,
+              padding: 8,
+              backgroundColor: 'white',
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ fontSize: 12 }}>
+              {new Date(it.fecha_inspeccion).toLocaleDateString()}{' '}
+              {it.estado_colmena ? `- ${it.estado_colmena}` : ''}
+            </Text>
+            {it.observaciones ? (
+              <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>
+                {it.observaciones}
+              </Text>
+            ) : null}
+          </View>
+        ))}
+
+        <View style={{ height: 12 }} />
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ fontWeight: '700' }}>
+            Producción ({producciones.length})
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowNewProdForm((s) => !s)}
+            style={{ padding: 6 }}
+          >
+            <Plus size={14} color={theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {showNewProdForm && (
+          <View style={{ marginTop: 8 }}>
+            <DatePickerField
+              label="Fecha"
+              value={prodFecha}
+              onDateChange={setProdFecha}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Cantidad"
+              value={prodCantidad}
+              onChangeText={setProdCantidad}
+              keyboardType="numeric"
+            />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={prodProducto}
+                onValueChange={(v) => setProdProducto(v)}
+              >
+                <Picker.Item label="Seleccionar..." value={null} />
+                {productos.map((pr: any) => (
+                  <Picker.Item
+                    key={pr.id_producto}
+                    label={pr.nombre}
+                    value={pr.id_producto}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={styles.saveButton} onPress={saveProd}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowNewProdForm(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {producciones.map((p) => (
+          <View
+            key={p.id_produccion}
+            style={{
+              marginTop: 8,
+              padding: 8,
+              backgroundColor: 'white',
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ fontSize: 12 }}>
+              {new Date(p.fecha_cosecha).toLocaleDateString()} - {p.cantidad}{' '}
+              {p.productoNombre ? `(${p.productoNombre})` : ''}
+            </Text>
+            {p.observaciones ? (
+              <Text style={{ fontSize: 12, color: theme.colors.darkGray }}>
+                {p.observaciones}
+              </Text>
+            ) : null}
+          </View>
+        ))}
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Colmenas</Text>
         <TouchableOpacity
@@ -383,16 +535,16 @@ export default function ColmenasScreen() {
               onRefresh={handleRefresh}
               scrollEnabled={true}
               ListHeaderComponent={
-                searchQuery || activeFilter || filteredColmenas.length !== colmenas.length
-                  ? (
-                      <View style={styles.resultCountContainer}>
-                        <Hexagon size={16} color={theme.colors.primary} />
-                        <Text style={styles.resultCount}>
-                          {filteredColmenas.length} de {colmenas.length} colmenas
-                        </Text>
-                      </View>
-                    )
-                  : null
+                searchQuery ||
+                activeFilter ||
+                filteredColmenas.length !== colmenas.length ? (
+                  <View style={styles.resultCountContainer}>
+                    <Hexagon size={16} color={theme.colors.primary} />
+                    <Text style={styles.resultCount}>
+                      {filteredColmenas.length} de {colmenas.length} colmenas
+                    </Text>
+                  </View>
+                ) : null
               }
             />
           )}
@@ -568,4 +720,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

@@ -76,7 +76,7 @@ export default function LoginScreen() {
 
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        router.replace('/');
+        router.replace('/(app)/home_page');
       })
       .catch(() => {
         showError('El usuario o la contraseña son incorrectos');

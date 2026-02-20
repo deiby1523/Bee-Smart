@@ -1,4 +1,5 @@
 import DatePickerField from '@/components/DatePickerField';
+import Header from '@/components/Header';
 import SearchFilter from '@/components/SearchFilter';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
@@ -12,15 +13,15 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Edit2, Plus, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -62,7 +63,7 @@ export default function ProduccionPage() {
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-    }, [])
+    }, []),
   );
 
   const loadData = async () => {
@@ -73,8 +74,13 @@ export default function ProduccionPage() {
 
       const allColmenas: ColmenaWithApiario[] = [];
       for (const apiario of apiariosData) {
-        const cols = await colmenaService.getColmenasByApiario(apiario.id_apiario);
-        const augmented = cols.map((c) => ({ ...c, apiarioNombre: apiario.nombre }));
+        const cols = await colmenaService.getColmenasByApiario(
+          apiario.id_apiario,
+        );
+        const augmented = cols.map((c) => ({
+          ...c,
+          apiarioNombre: apiario.nombre,
+        }));
         allColmenas.push(...augmented);
       }
       setColmenas(allColmenas);
@@ -119,13 +125,16 @@ export default function ProduccionPage() {
         (p) =>
           p.codigo_colmena?.toLowerCase().includes(q) ||
           p.productoNombre?.toLowerCase().includes(q) ||
-          p.apiarioNombre?.toLowerCase().includes(q)
+          p.apiarioNombre?.toLowerCase().includes(q),
       );
     }
     return result;
   }, [producciones, activeFilter, searchQuery]);
 
-  const productoFilters = productos.map((p) => ({ id: p.nombre, label: p.nombre }));
+  const productoFilters = productos.map((p) => ({
+    id: p.nombre,
+    label: p.nombre,
+  }));
 
   const resetForm = () => {
     setSelectedColmena(null);
@@ -143,7 +152,10 @@ export default function ProduccionPage() {
 
   const handleSave = async () => {
     if (!selectedColmena || !selectedProducto || !fechaCosecha || !cantidad) {
-      Alert.alert('Error', 'Colmena, producto, fecha y cantidad son requeridos');
+      Alert.alert(
+        'Error',
+        'Colmena, producto, fecha y cantidad son requeridos',
+      );
       return;
     }
     try {
@@ -210,17 +222,24 @@ export default function ProduccionPage() {
         <View style={styles.cardContent}>
           <Text style={styles.itemTitle}>{item.codigo_colmena}</Text>
           <Text style={styles.itemDate}>
-            {new Date(item.fecha_cosecha).toLocaleDateString()} - {item.cantidad}
+            {new Date(item.fecha_cosecha).toLocaleDateString()} -{' '}
+            {item.cantidad}
           </Text>
           {item.productoNombre && (
             <Text style={styles.productoText}>{item.productoNombre}</Text>
           )}
         </View>
         <View style={styles.actions}>
-          <TouchableOpacity onPress={() => handleEdit(item)} style={styles.actionBtn}>
+          <TouchableOpacity
+            onPress={() => handleEdit(item)}
+            style={styles.actionBtn}
+          >
             <Edit2 size={16} color={theme.colors.primary} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id_produccion)} style={styles.actionBtn}>
+          <TouchableOpacity
+            onPress={() => handleDelete(item.id_produccion)}
+            style={styles.actionBtn}
+          >
             <Trash2 size={16} color={theme.colors.error} />
           </TouchableOpacity>
         </View>
@@ -235,6 +254,7 @@ export default function ProduccionPage() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Producción</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleOpenNew}>
@@ -323,7 +343,14 @@ export default function ProduccionPage() {
             </View>
 
             <Text style={styles.label}>Nuevo producto</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm, marginBottom: theme.spacing.lg }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: theme.spacing.sm,
+                marginBottom: theme.spacing.lg,
+              }}
+            >
               <TextInput
                 style={[styles.input, { flex: 1 }]}
                 placeholder="Nombre"
@@ -331,11 +358,16 @@ export default function ProduccionPage() {
                 onChangeText={setNewProductName}
               />
               <TouchableOpacity
-                style={[styles.saveButton, { paddingHorizontal: theme.spacing.md }]}
+                style={[
+                  styles.saveButton,
+                  { paddingHorizontal: theme.spacing.md },
+                ]}
                 onPress={async () => {
                   if (!newProductName.trim()) return;
                   try {
-                    const newId = await productoService.createProducto({ nombre: newProductName.trim() });
+                    const newId = await productoService.createProducto({
+                      nombre: newProductName.trim(),
+                    });
                     const updated = await productoService.getAllProductos();
                     setProductos(updated);
                     setSelectedProducto(newId);

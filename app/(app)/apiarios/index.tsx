@@ -1,4 +1,5 @@
 import ApiarioStatsCard from '@/components/ApiarioStatsCard';
+import Header from '@/components/Header';
 import SearchFilter from '@/components/SearchFilter';
 import { theme } from '@/constants/theme';
 import { apiarioService } from '@/src/services/apiarioService';
@@ -9,12 +10,12 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Edit2, Plus, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -48,21 +49,21 @@ export default function ApiariosList() {
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-    }, [])
+    }, []),
   );
 
   const loadData = async () => {
     try {
       // Cargar apiarios con estadísticas
       const allApiarios = await apiarioService.getAllApiarios();
-      
+
       const apiariosWithStats: ApiarioWithStats[] = [];
       for (const apiario of allApiarios) {
         const colmenas = await colmenaService.getColmenasByApiario(
-          apiario.id_apiario
+          apiario.id_apiario,
         );
         const colmenasActivas = colmenas.filter(
-          (c) => c.estado_general === 'Activo' || c.estado_general === 'Fuerte'
+          (c) => c.estado_general === 'Activo' || c.estado_general === 'Fuerte',
         ).length;
 
         apiariosWithStats.push({
@@ -111,7 +112,7 @@ export default function ApiariosList() {
           },
           style: 'destructive',
         },
-      ]
+      ],
     );
   };
 
@@ -131,7 +132,7 @@ export default function ApiariosList() {
         (a) =>
           a.nombre.toLowerCase().includes(query) ||
           (a.descripcion?.toLowerCase().includes(query) ?? false) ||
-          (a.municipio?.toLowerCase().includes(query) ?? false)
+          (a.municipio?.toLowerCase().includes(query) ?? false),
       );
     }
 
@@ -162,7 +163,9 @@ export default function ApiariosList() {
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.editButton}
-            onPress={() => router.push(`/apiarios/edit/${item.id_apiario}` as any)}
+            onPress={() =>
+              router.push(`/apiarios/edit/${item.id_apiario}` as any)
+            }
           >
             <Edit2 size={18} color={theme.colors.primary} />
           </TouchableOpacity>
@@ -194,6 +197,7 @@ export default function ApiariosList() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mis Apiarios</Text>
         <TouchableOpacity
@@ -243,13 +247,13 @@ export default function ApiariosList() {
           onRefresh={handleRefresh}
           scrollEnabled={true}
           ListHeaderComponent={
-            searchQuery || activeMunicipio || filteredApiarios.length !== apiarios.length
-              ? (
-                  <Text style={styles.resultCount}>
-                    {filteredApiarios.length} de {apiarios.length} apiarios
-                  </Text>
-                )
-              : null
+            searchQuery ||
+            activeMunicipio ||
+            filteredApiarios.length !== apiarios.length ? (
+              <Text style={styles.resultCount}>
+                {filteredApiarios.length} de {apiarios.length} apiarios
+              </Text>
+            ) : null
           }
         />
       )}

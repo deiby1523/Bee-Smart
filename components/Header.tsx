@@ -1,50 +1,30 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';import { useAuth } from '@/hooks/useAuth';
 import { theme } from '@/constants/theme';
-import { LogOut } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { Hexagon, User } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const goHome = () => {
+    router.push('/(app)/home_page');
+  };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que quieres cerrar sesión?',
-      [
-        {
-          text: 'Cancelar',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {
-          text: 'Cerrar sesión',
-          onPress: async () => {
-            router.replace('/(auth)/login')
-            await logout();
-          },
-          style: 'destructive',
-        },
-      ]
-    );
+  const goMore = () => {
+    router.push('/(app)/more');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <View>
-          <Text style={styles.greeting}>Hola,</Text>
-          <Text style={styles.userName}>{user?.name}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <LogOut color={theme.colors.black} size={24} />
+        <Hexagon color={theme.colors.primary} size={28} strokeWidth={2} />
+
+        <TouchableOpacity onPress={goHome}>
+          <Text style={styles.title}>Bee-Smart</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={goMore}>
+          <User color={theme.colors.primary} size={26} strokeWidth={2} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -59,22 +39,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: -5,
   },
-  greeting: {
-    fontSize: theme.typography.caption.fontSize,
-    color: theme.colors.darkGray,
-    marginBottom: 2,
-  },
-  userName: {
-    fontSize: theme.typography.title.fontSize,
-    fontWeight: theme.typography.title.fontWeight,
+  title: {
+    fontSize: 15,
+    fontWeight: '600',
     color: theme.colors.black,
-  },
-  logoutButton: {
-    padding: theme.spacing.sm,
   },
 });

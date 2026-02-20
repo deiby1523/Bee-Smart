@@ -9,25 +9,25 @@ import { inspeccionService } from '@/src/services/inspeccionService';
 import { Apiario, Colmena } from '@/types/apiario';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-    Calendar,
-    ChevronLeft,
-    Edit2,
-    MapPin,
-    Plus,
-    Trash2,
+  Calendar,
+  ChevronLeft,
+  Edit2,
+  MapPin,
+  Plus,
+  Trash2,
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -40,7 +40,9 @@ export default function ApiarioDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [showNewColmenaModal, setShowNewColmenaModal] = useState(false);
   const [editingColmenaId, setEditingColmenaId] = useState<number | null>(null);
-  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(null);
+  const [expandedColmenaId, setExpandedColmenaId] = useState<number | null>(
+    null,
+  );
   const [modalColmenaId, setModalColmenaId] = useState<number | null>(null);
 
   // Form states para crear/editar colmena
@@ -56,7 +58,12 @@ export default function ApiarioDetailScreen() {
 
   const loadData = async () => {
     try {
-      const idNum = typeof id === 'string' ? parseInt(id) : (Array.isArray(id) ? parseInt(id[0]) : 0);
+      const idNum =
+        typeof id === 'string'
+          ? parseInt(id)
+          : Array.isArray(id)
+            ? parseInt(id[0])
+            : 0;
       const apiarioData = await apiarioService.getApiarioById(idNum);
       if (apiarioData) {
         setApiario(apiarioData);
@@ -65,7 +72,9 @@ export default function ApiarioDetailScreen() {
         const withIns = await Promise.all(
           colmenasData.map(async (c) => {
             try {
-              const last = await inspeccionService.getLastInspeccionByColmena(c.id_colmena);
+              const last = await inspeccionService.getLastInspeccionByColmena(
+                c.id_colmena,
+              );
               return {
                 ...c,
                 ultima_inspeccion_fecha: last?.fecha_inspeccion,
@@ -75,7 +84,7 @@ export default function ApiarioDetailScreen() {
               console.error('error fetching last insp for colmena', e);
               return c;
             }
-          })
+          }),
         );
         setColmenas(withIns);
       }
@@ -108,7 +117,12 @@ export default function ApiarioDetailScreen() {
     }
 
     try {
-      const idNum = typeof id === 'string' ? parseInt(id) : (Array.isArray(id) ? parseInt(id[0]) : 0);
+      const idNum =
+        typeof id === 'string'
+          ? parseInt(id)
+          : Array.isArray(id)
+            ? parseInt(id[0])
+            : 0;
       const colmenaData = {
         codigo_colmena: codigoColmena.trim(),
         estado_general: estadoGeneral.trim() || undefined,
@@ -165,7 +179,7 @@ export default function ApiarioDetailScreen() {
           },
           style: 'destructive',
         },
-      ]
+      ],
     );
   };
 
@@ -173,13 +187,14 @@ export default function ApiarioDetailScreen() {
     <TouchableOpacity
       style={styles.colmenaCard}
       activeOpacity={0.7}
-      onPress={() => setExpandedColmenaId(prev => prev === item.id_colmena ? null : item.id_colmena)}
+      onPress={() =>
+        setExpandedColmenaId((prev) =>
+          prev === item.id_colmena ? null : item.id_colmena,
+        )
+      }
     >
       {item.foto_url && (
-        <Image
-          source={{ uri: item.foto_url }}
-          style={styles.colmenaImage}
-        />
+        <Image source={{ uri: item.foto_url }} style={styles.colmenaImage} />
       )}
 
       <View style={styles.colmenaHeader}>
@@ -190,7 +205,11 @@ export default function ApiarioDetailScreen() {
           </Text>
           {item.ultima_inspeccion_fecha && (
             <Text style={styles.lastInspection}>
-              Últ. insp.: {new Date(item.ultima_inspeccion_fecha).toLocaleDateString()} {item.ultima_inspeccion_estado ? `(${item.ultima_inspeccion_estado})` : ''}
+              Últ. insp.:{' '}
+              {new Date(item.ultima_inspeccion_fecha).toLocaleDateString()}{' '}
+              {item.ultima_inspeccion_estado
+                ? `(${item.ultima_inspeccion_estado})`
+                : ''}
             </Text>
           )}
         </View>
@@ -203,7 +222,9 @@ export default function ApiarioDetailScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => handleDeleteColmena(item.id_colmena, item.codigo_colmena)}
+            onPress={() =>
+              handleDeleteColmena(item.id_colmena, item.codigo_colmena)
+            }
           >
             <Trash2 size={16} color={theme.colors.error} />
           </TouchableOpacity>
@@ -217,7 +238,10 @@ export default function ApiarioDetailScreen() {
       )}
 
       {item.observaciones && (
-        <Text style={styles.colmenaObservaciones} numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}>
+        <Text
+          style={styles.colmenaObservaciones}
+          numberOfLines={expandedColmenaId === item.id_colmena ? undefined : 2}
+        >
           {item.observaciones}
         </Text>
       )}
@@ -229,10 +253,17 @@ export default function ApiarioDetailScreen() {
 
   function ColmenaInlineDetail({ colmenaId }: { colmenaId: number }) {
     return (
-      <View style={{ padding: theme.spacing.md, backgroundColor: theme.colors.white }}>
+      <View
+        style={{
+          padding: theme.spacing.md,
+          backgroundColor: theme.colors.white,
+        }}
+      >
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
           <TouchableOpacity onPress={() => setModalColmenaId(colmenaId)}>
-            <Text style={{ color: theme.colors.primary, fontSize: 12 }}>Detalle</Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 12 }}>
+              Detalle
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -286,7 +317,9 @@ export default function ApiarioDetailScreen() {
           {apiario.nombre}
         </Text>
         <TouchableOpacity
-          onPress={() => router.push(`/apiarios/edit/${apiario.id_apiario}` as any)}
+          onPress={() =>
+            router.push(`/apiarios/edit/${apiario.id_apiario}` as any)
+          }
           style={styles.editHeaderButton}
         >
           <Edit2 size={20} color={theme.colors.primary} />
@@ -363,9 +396,7 @@ export default function ApiarioDetailScreen() {
               renderItem={renderColmenaItem}
               keyExtractor={(item) => item.id_colmena.toString()}
               scrollEnabled={false}
-              ItemSeparatorComponent={() => (
-                <View style={styles.separator} />
-              )}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
           )}
         </View>
@@ -467,7 +498,10 @@ export default function ApiarioDetailScreen() {
       {/* modal detalle de colmena */}
       <Modal visible={modalColmenaId !== null} animationType="slide">
         {modalColmenaId !== null && (
-          <ColmenaDetail colmenaId={modalColmenaId} onClose={() => setModalColmenaId(null)} />
+          <ColmenaDetail
+            colmenaId={modalColmenaId}
+            onClose={() => setModalColmenaId(null)}
+          />
         )}
       </Modal>
     </SafeAreaView>
