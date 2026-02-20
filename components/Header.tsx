@@ -1,56 +1,34 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';import { useAuth } from '@/hooks/useAuth';
 import { theme } from '@/constants/theme';
-import { LogOut } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Hexagon, User } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Header() {
-  const { user, logout } = useAuth();
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que quieres cerrar sesión?',
-      [
-        {
-          text: 'Cancelar',
-          onPress: () => {},
-          style: 'cancel',
-        },
-        {
-          text: 'Cerrar sesión',
-          onPress: async () => {
-            router.replace('/(auth)/login')
-            await logout();
-          },
-          style: 'destructive',
-        },
-      ]
-    );
+  const handleProfilePress = () => {
+    console.log('Ir a perfil');
+    // router.push('/profile') si quieres navegación
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <View>
-          <Text style={styles.greeting}>Hola,</Text>
-          <Text style={styles.userName}>{user?.name}</Text>
+        {/* Logo Izquierda */}
+        <View style={styles.left}>
+          <Hexagon color={theme.colors.primary} size={28} strokeWidth={2} />
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <LogOut color={theme.colors.black} size={24} />
+
+        {/* Título centrado */}
+        <Text style={styles.title}>Bee-Smart</Text>
+
+        {/* Icono derecha */}
+        <TouchableOpacity style={styles.right} onPress={handleProfilePress}>
+          <User color={theme.colors.primary} size={26} strokeWidth={2} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.lightGray,
@@ -59,22 +37,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: -5,
   },
-  greeting: {
-    fontSize: theme.typography.caption.fontSize,
-    color: theme.colors.darkGray,
-    marginBottom: 2,
+  left: {
+    width: 40,
+    alignItems: 'flex-start',
   },
-  userName: {
-    fontSize: theme.typography.title.fontSize,
-    fontWeight: theme.typography.title.fontWeight,
+  title: {
+    alignSelf: 'center',
+    fontSize: 15,
+    fontWeight: '600',
     color: theme.colors.black,
   },
-  logoutButton: {
-    padding: theme.spacing.sm,
+  right: {
+    width: 40,
+    alignItems: 'flex-end',
   },
 });
