@@ -253,19 +253,13 @@ export default function ApiarioDetailScreen() {
 
   function ColmenaInlineDetail({ colmenaId }: { colmenaId: number }) {
     return (
-      <View
-        style={{
-          padding: theme.spacing.md,
-          backgroundColor: theme.colors.white,
-        }}
-      >
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-          <TouchableOpacity onPress={() => setModalColmenaId(colmenaId)}>
-            <Text style={{ color: theme.colors.primary, fontSize: 12 }}>
-              Detalle
-            </Text>
-          </TouchableOpacity>
-        </View>
+      <View style={{ padding: theme.spacing.md }}>
+        <TouchableOpacity
+          style={styles.detailButton}
+          onPress={() => setModalColmenaId(colmenaId)}
+        >
+          <Text style={styles.detailButtonText}>Ver detalle completo</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -329,26 +323,27 @@ export default function ApiarioDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Foto del Apiario */}
         {apiario.foto_url && (
-          <Image
-            source={{ uri: apiario.foto_url }}
-            style={styles.apiarioImage}
-          />
+          <View style={styles.apiarioImageContainer}>
+            <Image
+              source={{ uri: apiario.foto_url }}
+              style={styles.apiarioImage}
+            />
+            <View style={styles.imageOverlay} />
+          </View>
         )}
 
         {/* Info del Apiario */}
-        <View style={styles.apiarioInfoCard}>
+        <View style={styles.apiarioCard}>
           {apiario.descripcion && (
             <Text style={styles.apiarioDescription}>{apiario.descripcion}</Text>
           )}
 
-          <View style={styles.infoRow}>
-            {apiario.municipio && (
-              <>
-                <MapPin size={16} color={theme.colors.primary} />
-                <Text style={styles.infoText}>{apiario.municipio}</Text>
-              </>
-            )}
-          </View>
+          {apiario.municipio && (
+            <View style={styles.infoRow}>
+              <MapPin size={16} color={theme.colors.primary} />
+              <Text style={styles.infoText}>{apiario.municipio}</Text>
+            </View>
+          )}
 
           <View style={styles.infoRow}>
             <Calendar size={16} color={theme.colors.darkGray} />
@@ -358,10 +353,10 @@ export default function ApiarioDetailScreen() {
           </View>
 
           {apiario.latitud && apiario.longitud && (
-            <View style={styles.coordsContainer}>
-              <Text style={styles.coordsLabel}>Coordenadas:</Text>
+            <View style={styles.coordsBox}>
+              <Text style={styles.coordsLabel}>Coordenadas GPS</Text>
               <Text style={styles.coordsText}>
-                {apiario.latitud.toFixed(4)}, {apiario.longitud.toFixed(4)}
+                📍 {apiario.latitud.toFixed(6)} , {apiario.longitud.toFixed(6)}
               </Text>
             </View>
           )}
@@ -377,7 +372,7 @@ export default function ApiarioDetailScreen() {
               style={styles.addColmenaButton}
               onPress={handleOpenNewColmena}
             >
-              <Plus size={20} color={theme.colors.primary} />
+              <Plus size={20} color={theme.colors.white} />
             </TouchableOpacity>
           </View>
 
@@ -515,13 +510,15 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.mediumGray,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.white,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   backButton: {
     padding: theme.spacing.sm,
@@ -541,7 +538,9 @@ const styles = StyleSheet.create({
   },
   apiarioImage: {
     width: '100%',
-    height: 220,
+    height: 260,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
     backgroundColor: theme.colors.lightGray,
   },
   apiarioInfoCard: {
@@ -572,20 +571,22 @@ const styles = StyleSheet.create({
   },
   coordsContainer: {
     marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.mediumGray,
+    backgroundColor: theme.colors.white,
+    padding: theme.spacing.md,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.mediumGray,
   },
   coordsLabel: {
-    fontSize: 12,
     fontWeight: '600',
     color: theme.colors.darkGray,
     marginBottom: theme.spacing.xs,
   },
   coordsText: {
-    fontSize: 13,
+    fontSize: 14,
     color: theme.colors.black,
     fontFamily: 'monospace',
+    letterSpacing: 1,
   },
   colmenasSection: {
     paddingHorizontal: theme.spacing.md,
@@ -607,12 +608,13 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
   },
   addColmenaButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.lightGray,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 3,
   },
   emptyColmenas: {
     paddingVertical: theme.spacing.xl,
@@ -629,14 +631,23 @@ const styles = StyleSheet.create({
     color: theme.colors.mediumGray,
   },
   colmenaCard: {
-    backgroundColor: theme.colors.lightGray,
-    borderRadius: 8,
-    overflow: 'hidden',
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    borderColor: theme.colors.mediumGray,
+    borderWidth: 1,
+    marginBottom: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
   },
   colmenaImage: {
     width: '100%',
-    height: 150,
-    backgroundColor: theme.colors.mediumGray,
+    height: 160,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   colmenaHeader: {
     flexDirection: 'row',
@@ -674,17 +685,18 @@ const styles = StyleSheet.create({
   },
   estadoBadge: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 4,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     marginHorizontal: theme.spacing.md,
     marginVertical: theme.spacing.sm,
     alignSelf: 'flex-start',
   },
   estadoText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: theme.colors.white,
+    textTransform: 'uppercase',
   },
   colmenaObservaciones: {
     fontSize: 12,
@@ -694,7 +706,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   separator: {
-    height: theme.spacing.md,
+    height: theme.spacing.lg,
   },
   // Modal Styles
   modalOverlay: {
@@ -794,5 +806,53 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: theme.spacing.sm,
     backgroundColor: theme.colors.lightGray,
+  },
+  apiarioImageContainer: {
+    position: 'relative',
+  },
+
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  apiarioCard: {
+    backgroundColor: theme.colors.white,
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.lg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.mediumGray,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+  },
+  coordsBox: {
+    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.lightGray,
+    padding: theme.spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.mediumGray,
+  },
+  detailButton: {
+    marginTop: theme.spacing.sm,
+    alignSelf: 'center',
+    backgroundColor: theme.colors.lightGray,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.mediumGray,
+  },
+
+  detailButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
 });
