@@ -14,25 +14,24 @@ export default function ApiarioStatsCard({
   colmenasActivas,
   showDetails = true,
 }: ApiarioStatsCardProps) {
-  const saludPercentage = totalColmenas > 0
-    ? Math.round((colmenasActivas / totalColmenas) * 100)
-    : 0;
+  const saludPercentage =
+    totalColmenas > 0 ? Math.round((colmenasActivas / totalColmenas) * 100) : 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.stat}>
-        <Beaker size={16} color={theme.colors.primary} />
-        <Text style={styles.statLabel}>Colmenas</Text>
+        <Beaker size={18} color="#E67E22" />
         <Text style={styles.statValue}>{totalColmenas}</Text>
+        <Text style={styles.statLabel}>Colmenas</Text>
       </View>
 
       {showDetails && (
         <>
           <View style={styles.divider} />
           <View style={styles.stat}>
-            <TrendingUp size={16} color={theme.colors.success} />
-            <Text style={styles.statLabel}>Activas</Text>
+            <TrendingUp size={18} color="#27AE60" />
             <Text style={styles.statValue}>{colmenasActivas}</Text>
+            <Text style={styles.statLabel}>Activas</Text>
           </View>
 
           <View style={styles.divider} />
@@ -45,8 +44,8 @@ export default function ApiarioStatsCard({
                     saludPercentage >= 80
                       ? theme.colors.success
                       : saludPercentage >= 50
-                      ? theme.colors.secondary
-                      : theme.colors.error,
+                        ? theme.colors.secondary
+                        : theme.colors.error,
                 },
               ]}
             >
@@ -63,37 +62,48 @@ export default function ApiarioStatsCard({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
+    justifyContent: 'space-between',
+    backgroundColor: '#F7F7F7',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
   },
+
   stat: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
   },
+
   statLabel: {
-    fontSize: 11,
-    color: theme.colors.darkGray,
+    fontSize: 12,
+    color: '#888',
     fontWeight: '500',
+    marginTop: 4,
   },
+
   statValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.black,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#222',
+    marginTop: 2,
   },
+
   divider: {
     width: 1,
-    height: 24,
-    backgroundColor: theme.colors.mediumGray,
+    backgroundColor: '#E2E2E2',
+    marginHorizontal: 6,
   },
+
   healthBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
+
   healthText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.white,
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

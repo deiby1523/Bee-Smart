@@ -8,8 +8,9 @@ export const apiarioService = {
   async createApiario(apiario: Omit<Apiario, 'id_apiario'>): Promise<number> {
     try {
       const result = await db.runAsync(
-        `INSERT INTO apiarios (nombre, descripcion, latitud, longitud, municipio, fecha_creacion, id_usuario)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO apiarios 
+      (nombre, descripcion, latitud, longitud, municipio, fecha_creacion, id_usuario, foto_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           apiario.nombre,
           apiario.descripcion || null,
@@ -18,7 +19,8 @@ export const apiarioService = {
           apiario.municipio || null,
           apiario.fecha_creacion,
           apiario.id_usuario || null,
-        ]
+          apiario.foto_url || null,
+        ],
       );
       return result.lastInsertRowId;
     } catch (error) {
@@ -31,7 +33,7 @@ export const apiarioService = {
   async getAllApiarios(): Promise<Apiario[]> {
     try {
       const result = await db.getAllAsync<Apiario>(
-        'SELECT * FROM apiarios ORDER BY fecha_creacion DESC'
+        'SELECT * FROM apiarios ORDER BY fecha_creacion DESC',
       );
       return result;
     } catch (error) {
@@ -45,7 +47,7 @@ export const apiarioService = {
     try {
       const result = await db.getFirstAsync<Apiario>(
         'SELECT * FROM apiarios WHERE id_apiario = ?',
-        [id]
+        [id],
       );
       return result || null;
     } catch (error) {
@@ -80,6 +82,10 @@ export const apiarioService = {
         updates.push('municipio = ?');
         values.push(apiario.municipio);
       }
+      if (apiario.foto_url !== undefined) {
+        updates.push('foto_url = ?');
+        values.push(apiario.foto_url);
+      }
 
       if (updates.length === 0) return;
 
@@ -106,9 +112,9 @@ export const apiarioService = {
   async getUniqueMunicipios(): Promise<string[]> {
     try {
       const result = await db.getAllAsync<{ municipio: string }>(
-        'SELECT DISTINCT municipio FROM apiarios WHERE municipio IS NOT NULL AND municipio != "" ORDER BY municipio ASC'
+        'SELECT DISTINCT municipio FROM apiarios WHERE municipio IS NOT NULL AND municipio != "" ORDER BY municipio ASC',
       );
-      return result.map(r => r.municipio).filter(m => m && m.trim() !== '');
+      return result.map((r) => r.municipio).filter((m) => m && m.trim() !== '');
     } catch (error) {
       console.error('Error fetching unique municipios:', error);
       return [];

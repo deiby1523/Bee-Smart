@@ -12,6 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -150,6 +151,9 @@ export default function ApiariosList() {
       onPress={() => router.push(`/apiarios/${item.id_apiario}` as any)}
       activeOpacity={0.7}
     >
+      {item.foto_url && (
+        <Image source={{ uri: item.foto_url }} style={styles.cardImage} />
+      )}
       <View style={styles.cardHeader}>
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>{item.nombre}</Text>
@@ -264,107 +268,141 @@ export default function ApiariosList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#F4F4F4',
   },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.mediumGray,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
+
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: theme.colors.black,
+    color: '#222',
   },
+
   addButton: {
-    backgroundColor: theme.colors.primary,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    backgroundColor: '#E67E22',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
   },
+
   listContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 18,
+    paddingBottom: 30,
   },
+
   resultCount: {
     fontSize: 12,
-    color: theme.colors.darkGray,
+    color: '#777',
+    marginBottom: 10,
     fontWeight: '500',
-    marginBottom: theme.spacing.md,
   },
+
+  /* CARD ESTILO MOCKUP */
   card: {
-    backgroundColor: theme.colors.lightGray,
-    borderRadius: 12,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 5,
   },
+
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: theme.spacing.sm,
+    marginBottom: 10,
   },
+
   cardContent: {
     flex: 1,
   },
+
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.black,
-    marginBottom: theme.spacing.xs,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#222',
+    marginBottom: 4,
   },
+
   cardDate: {
     fontSize: 12,
-    color: theme.colors.darkGray,
+    color: '#999',
   },
+
   cardMunicipio: {
-    fontSize: 12,
-    color: theme.colors.primary,
-    fontWeight: '500',
-    marginTop: theme.spacing.xs,
+    fontSize: 13,
+    color: '#E67E22',
+    fontWeight: '600',
+    marginTop: 4,
   },
+
   actionButtons: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
+
   editButton: {
-    padding: theme.spacing.sm,
+    backgroundColor: '#F2F2F2',
+    padding: 8,
+    borderRadius: 10,
   },
+
   deleteButton: {
-    padding: theme.spacing.sm,
+    backgroundColor: '#FFECEC',
+    padding: 8,
+    borderRadius: 10,
   },
+
   cardDescription: {
     fontSize: 14,
-    color: theme.colors.darkGray,
-    marginBottom: theme.spacing.md,
+    color: '#666',
+    marginTop: 6,
+    marginBottom: 14,
   },
+
   statsContainer: {
-    paddingTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.mediumGray,
+    marginTop: 10,
   },
+
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.black,
-    marginBottom: theme.spacing.sm,
+    color: '#222',
+    marginBottom: 6,
   },
+
   emptySubtext: {
     fontSize: 14,
-    color: theme.colors.darkGray,
+    color: '#888',
+  },
+  cardImage: {
+    width: '100%',
+    height: 160,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginBottom: 12,
   },
 });

@@ -140,7 +140,10 @@ export default function LoginScreen() {
           <TouchableOpacity style={styles.button} onPress={handleSignIn}>
             <Text style={styles.buttonText}>Iniciar Sesión</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.guestButton} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.guestButton}
+            onPress={() => router.replace('/(app)/home_page')}
+          >
             <Text style={styles.guestButtonText}>Iniciar como invitado</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
